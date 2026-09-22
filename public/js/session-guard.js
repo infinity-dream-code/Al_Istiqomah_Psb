@@ -6,6 +6,7 @@
     if (window.__psbkuSessionGuard) return;
     window.__psbkuSessionGuard = true;
 
+    var nativeFetch = window.fetch.bind(window);
     var keepaliveUrl = (document.querySelector('meta[name="session-keepalive"]') || {}).content
         || '/session/keepalive';
     var refreshing = null;
@@ -27,7 +28,7 @@
 
     function refreshToken() {
         if (refreshing) return refreshing;
-        refreshing = fetch(keepaliveUrl, {
+        refreshing = nativeFetch(keepaliveUrl, {
             method: 'GET',
             credentials: 'same-origin',
             headers: {
@@ -47,7 +48,6 @@
 
     window.__psbkuRefreshCsrf = refreshToken;
 
-    // Keep session & CSRF hidup selama tab terbuka
     setInterval(refreshToken, 5 * 60 * 1000);
     if (document.readyState === 'complete') {
         refreshToken();
@@ -88,8 +88,10 @@
         return init;
     }
 
-    // Intercept fetch → silent retry on 419
-    var nativeFetch = window.fetch.bind(window);
+    function tokenFrom419(response) {
+        return response.headers.get('X-CSRF-TOKEN') || currentToken();
+    }
+
     window.fetch = function (input, init) {
         init = init || {};
         if (init._csrfRetried) {
@@ -97,14 +99,17 @@
         }
         return nativeFetch(input, init).then(function (response) {
             if (response.status !== 419) return response;
+            var headerToken = tokenFrom419(response);
             return refreshToken().then(function (token) {
-                var nextInit = withCsrfHeaders(Object.assign({}, init, { _csrfRetried: true }), token || currentToken());
+                var nextInit = withCsrfHeaders(
+                    Object.assign({}, init, { _csrfRetried: true }),
+                    token || headerToken || currentToken()
+                );
                 return nativeFetch(input, nextInit);
             });
         });
     };
 
-    // Intercept XHR → silent retry on 419 (sekali)
     var XO = XMLHttpRequest.prototype.open;
     var XS = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.open = function () {

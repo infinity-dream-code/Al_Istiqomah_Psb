@@ -10,28 +10,44 @@ use Throwable;
 
 /**
  * Retry GET sekali untuk error transient (DB lock/deadlock/gone away, session lock).
- * Tidak menampilkan halaman error bila retry berhasil.
+ *
+ * Catatan Laravel 10+: exception di dalam pipeline sering sudah di-render jadi
+ * Response 500, jadi kita cek status response juga — bukan hanya catch Throwable.
  */
 class RetryTransientErrors
 {
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            return $next($request);
+            $response = $next($request);
         } catch (Throwable $e) {
-            if (!$this->shouldRetry($request, $e)) {
+            if (!$this->shouldRetryException($request, $e)) {
                 throw $e;
             }
 
-            $request->attributes->set('_transient_retried', true);
+            return $this->retry($request, $next);
+        }
 
-            usleep(150000);
+        if ($this->shouldRetryResponse($request, $response)) {
+            return $this->retry($request, $next);
+        }
 
+        return $response;
+    }
+
+    private function retry(Request $request, Closure $next): Response
+    {
+        $request->attributes->set('_transient_retried', true);
+        usleep(150000);
+
+        try {
             return $next($request);
+        } catch (Throwable $e) {
+            throw $e;
         }
     }
 
-    private function shouldRetry(Request $request, Throwable $e): bool
+    private function shouldRetryException(Request $request, Throwable $e): bool
     {
         if ($request->attributes->get('_transient_retried')) {
             return false;
@@ -42,6 +58,36 @@ class RetryTransientErrors
         }
 
         return $this->isTransient($e);
+    }
+
+    private function shouldRetryResponse(Request $request, Response $response): bool
+    {
+        if ($request->attributes->get('_transient_retried')) {
+            return false;
+        }
+
+        if (!in_array($request->method(), ['GET', 'HEAD'], true)) {
+            return false;
+        }
+
+        if ($response->getStatusCode() < 500) {
+            return false;
+        }
+
+        // Laravel Response::withException — pakai exception asli bila ada
+        $exception = null;
+        if (method_exists($response, 'exception')) {
+            $exception = $response->exception;
+        } elseif (property_exists($response, 'exception')) {
+            $exception = $response->exception;
+        }
+
+        if ($exception instanceof Throwable) {
+            return $this->isTransient($exception);
+        }
+
+        // Tanpa exception detail: tetap retry GET 500 sekali (transient sering sudah di-render)
+        return true;
     }
 
     private function isTransient(Throwable $e): bool
