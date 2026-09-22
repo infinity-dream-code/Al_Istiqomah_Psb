@@ -28,7 +28,13 @@ class AuthRedirect
         }
 
         try {
-            $role = MasterRole::where('nama_role', $user->role)->first();
+            $role = MasterRole::whereRaw('LOWER(nama_role) = ?', [strtolower((string) $user->role)])->first();
+            if (!$role) {
+                $compact = strtolower(preg_replace('/[\s\-]+/', '', (string) $user->role));
+                $role = MasterRole::get()->first(function ($r) use ($compact) {
+                    return strtolower(preg_replace('/[\s\-]+/', '', (string) $r->nama_role)) === $compact;
+                });
+            }
             if ($role) {
                 return '/pages/display/home/' . Str::slug($role->nama_role, '-');
             }

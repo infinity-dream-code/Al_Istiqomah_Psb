@@ -23,6 +23,14 @@ public function role($role)
     $normalizedRole = Str::of($role)->replace('-', ' ')->__toString();
     $roleData = MasterRole::whereRaw('LOWER(nama_role) = ?', [strtolower($normalizedRole)])->first();
 
+    // Fallback: cocokkan tanpa spasi/strip
+    if (!$roleData) {
+        $compact = strtolower(preg_replace('/[\s\-]+/', '', $normalizedRole));
+        $roleData = MasterRole::get()->first(function ($r) use ($compact) {
+            return strtolower(preg_replace('/[\s\-]+/', '', (string) $r->nama_role)) === $compact;
+        });
+    }
+
     $menus = [];
 
     $today = now();
@@ -38,44 +46,56 @@ public function role($role)
     }
 
     $prodiIds = [];
-    if ($user->prodi_id) {
+    if ($user && $user->prodi_id) {
         $prodiIds = is_array($user->prodi_id) ? $user->prodi_id : explode(',', $user->prodi_id);
+        $prodiIds = array_values(array_filter(array_map('trim', $prodiIds), fn ($v) => $v !== '' && $v !== null));
     }
 
-    $queryBase = DataPeserta::whereIn('id_prodi', $prodiIds)
-        ->where('id_gelombang', $activeGelombang->id);
-
     $stats = [
-        'total_pendaftar' => (clone $queryBase)->count(),
-        'total_bayar' => (clone $queryBase)->where('status_paid', 1)->count(),
-        'total_lulus' => (clone $queryBase)->where('status_ujian', 'lulus')->count(),
-        'total_registrasi' => (clone $queryBase)->where('status_pembayaran_registrasi', 1)->count(),
+        'total_pendaftar' => 0,
+        'total_bayar' => 0,
+        'total_lulus' => 0,
+        'total_registrasi' => 0,
+        'percent_bayar' => 0,
+        'percent_lulus' => 0,
+        'percent_registrasi' => 0,
     ];
 
-    $stats['percent_bayar'] = $stats['total_pendaftar'] > 0 ? round(($stats['total_bayar'] / $stats['total_pendaftar']) * 100) : 0;
-    $stats['percent_lulus'] = $stats['total_pendaftar'] > 0 ? round(($stats['total_lulus'] / $stats['total_pendaftar']) * 100) : 0;
-    $stats['percent_registrasi'] = $stats['total_pendaftar'] > 0 ? round(($stats['total_registrasi'] / $stats['total_pendaftar']) * 100) : 0;
-
-    $year = date('Y');
     $monthlyChart = [
         'labels' => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-        'pendaftar' => [],
-        'bayar' => []
+        'pendaftar' => array_fill(0, 12, 0),
+        'bayar' => array_fill(0, 12, 0),
     ];
 
-    foreach (range(1, 12) as $m) {
-        $monthlyChart['pendaftar'][] = DataPeserta::whereIn('id_prodi', $prodiIds)
-            ->where('id_gelombang', $activeGelombang->id)
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $m)
-            ->count();
+    // Jangan query kalau gelombang/prodi belum siap (ini yang sering bikin error setelah login role unit)
+    if ($activeGelombang && !empty($prodiIds)) {
+        $queryBase = DataPeserta::whereIn('id_prodi', $prodiIds)
+            ->where('id_gelombang', $activeGelombang->id);
 
-        $monthlyChart['bayar'][] = DataPeserta::whereIn('id_prodi', $prodiIds)
-            ->where('id_gelombang', $activeGelombang->id)
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $m)
-            ->where('status_paid', 1)
-            ->count();
+        $stats['total_pendaftar'] = (clone $queryBase)->count();
+        $stats['total_bayar'] = (clone $queryBase)->where('status_paid', 1)->count();
+        $stats['total_lulus'] = (clone $queryBase)->where('status_ujian', 'lulus')->count();
+        $stats['total_registrasi'] = (clone $queryBase)->where('status_pembayaran_registrasi', 1)->count();
+
+        $stats['percent_bayar'] = $stats['total_pendaftar'] > 0 ? round(($stats['total_bayar'] / $stats['total_pendaftar']) * 100) : 0;
+        $stats['percent_lulus'] = $stats['total_pendaftar'] > 0 ? round(($stats['total_lulus'] / $stats['total_pendaftar']) * 100) : 0;
+        $stats['percent_registrasi'] = $stats['total_pendaftar'] > 0 ? round(($stats['total_registrasi'] / $stats['total_pendaftar']) * 100) : 0;
+
+        $year = date('Y');
+        foreach (range(1, 12) as $m) {
+            $monthlyChart['pendaftar'][$m - 1] = DataPeserta::whereIn('id_prodi', $prodiIds)
+                ->where('id_gelombang', $activeGelombang->id)
+                ->whereYear('created_at', $year)
+                ->whereMonth('created_at', $m)
+                ->count();
+
+            $monthlyChart['bayar'][$m - 1] = DataPeserta::whereIn('id_prodi', $prodiIds)
+                ->where('id_gelombang', $activeGelombang->id)
+                ->whereYear('created_at', $year)
+                ->whereMonth('created_at', $m)
+                ->where('status_paid', 1)
+                ->count();
+        }
     }
 
     if ($roleData && $roleData->menu) {
@@ -90,6 +110,9 @@ public function role($role)
             }
         }
     }
+
+    // Pastikan $role di view selalu slug aman (bukan nama dengan spasi)
+    $role = Str::slug($normalizedRole, '-');
 
     return view('dashboard-unit.index', compact('menus', 'user', 'role', 'monthlyChart', 'stats', 'activeGelombang'));
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\AppIdentity;
+
 return [
 
     /*
@@ -16,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => env('SESSION_DRIVER', 'file'),
 
     /*
     |--------------------------------------------------------------------------
@@ -125,17 +127,12 @@ return [
     |
     */
 
-    'cookie' => env('SESSION_COOKIE', 'psbku_session'),
+    'cookie' => env('SESSION_COOKIE') ?: \App\Support\AppIdentity::sessionCookie(),
 
     /*
     |--------------------------------------------------------------------------
     | Session Cookie Path
     |--------------------------------------------------------------------------
-    |
-    | The session cookie path determines the path for which the cookie will
-    | be regarded as available. Typically, this will be the root path of
-    | your application but you are free to change this when necessary.
-    |
     */
 
     'path' => '/',
@@ -145,13 +142,12 @@ return [
     | Session Cookie Domain
     |--------------------------------------------------------------------------
     |
-    | Here you may change the domain of the cookie used to identify a session
-    | in your application. This will determine which domains the cookie is
-    | available to in your application. A sensible default has been set.
+    | Biarkan null (host-only). JANGAN isi .smartpayment.co.id — cookie akan
+    | kebaca semua subdomain project lain.
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => env('SESSION_DOMAIN') ?: null,
 
     /*
     |--------------------------------------------------------------------------
