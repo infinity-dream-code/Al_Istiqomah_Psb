@@ -1,0 +1,161 @@
+/**
+ * Session keep-alive + silent CSRF (419) recovery.
+ * Tidak menampilkan notifikasi sesi / tidak redirect ke login.
+ */
+(function () {
+    if (window.__psbkuSessionGuard) return;
+    window.__psbkuSessionGuard = true;
+
+    var keepaliveUrl = (document.querySelector('meta[name="session-keepalive"]') || {}).content
+        || '/session/keepalive';
+    var refreshing = null;
+
+    function setToken(token) {
+        if (!token) return token;
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) meta.setAttribute('content', token);
+        document.querySelectorAll('input[name="_token"]').forEach(function (el) {
+            el.value = token;
+        });
+        return token;
+    }
+
+    function currentToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : null;
+    }
+
+    function refreshToken() {
+        if (refreshing) return refreshing;
+        refreshing = fetch(keepaliveUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function (data) {
+                setToken(data.token);
+                return data.token;
+            })
+            .catch(function () { return currentToken(); })
+            .finally(function () { refreshing = null; });
+        return refreshing;
+    }
+
+    window.__psbkuRefreshCsrf = refreshToken;
+
+    // Keep session & CSRF hidup selama tab terbuka
+    setInterval(refreshToken, 5 * 60 * 1000);
+    if (document.readyState === 'complete') {
+        refreshToken();
+    } else {
+        window.addEventListener('load', function () { refreshToken(); });
+    }
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') refreshToken();
+    });
+
+    function headersToObject(headers) {
+        if (!headers) return {};
+        if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+            var obj = {};
+            headers.forEach(function (v, k) { obj[k] = v; });
+            return obj;
+        }
+        return Object.assign({}, headers);
+    }
+
+    function withCsrfHeaders(init, token) {
+        init = Object.assign({}, init || {});
+        var headers = headersToObject(init.headers);
+        if (token) {
+            headers['X-CSRF-TOKEN'] = token;
+            headers['X-XSRF-TOKEN'] = token;
+        }
+        headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
+        init.headers = headers;
+
+        if (typeof FormData !== 'undefined' && init.body instanceof FormData && token) {
+            init.body.set('_token', token);
+        } else if (typeof init.body === 'string' && token) {
+            if (init.body.indexOf('_token=') !== -1) {
+                init.body = init.body.replace(/(^|&)_token=[^&]*/, '$1_token=' + encodeURIComponent(token));
+            }
+        }
+        return init;
+    }
+
+    // Intercept fetch → silent retry on 419
+    var nativeFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+        init = init || {};
+        if (init._csrfRetried) {
+            return nativeFetch(input, init);
+        }
+        return nativeFetch(input, init).then(function (response) {
+            if (response.status !== 419) return response;
+            return refreshToken().then(function (token) {
+                var nextInit = withCsrfHeaders(Object.assign({}, init, { _csrfRetried: true }), token || currentToken());
+                return nativeFetch(input, nextInit);
+            });
+        });
+    };
+
+    // Intercept XHR → silent retry on 419 (sekali)
+    var XO = XMLHttpRequest.prototype.open;
+    var XS = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function () {
+        this.__psbkuMethod = arguments[0];
+        this.__psbkuUrl = arguments[1];
+        this.__psbkuAsync = arguments[2] !== false;
+        return XO.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function (body) {
+        var xhr = this;
+        if (xhr.__psbkuGuard) {
+            return XS.call(xhr, body);
+        }
+        xhr.__psbkuGuard = true;
+
+        var token = currentToken();
+        if (token) {
+            try { xhr.setRequestHeader('X-CSRF-TOKEN', token); } catch (e) {}
+            try { xhr.setRequestHeader('X-XSRF-TOKEN', token); } catch (e) {}
+        }
+
+        var originalOnReady = xhr.onreadystatechange;
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 419 && !xhr.__psbkuRetried) {
+                xhr.__psbkuRetried = true;
+                refreshToken().then(function (newToken) {
+                    var retry = new XMLHttpRequest();
+                    retry.__psbkuGuard = true;
+                    retry.open(xhr.__psbkuMethod, xhr.__psbkuUrl, xhr.__psbkuAsync);
+                    if (newToken) {
+                        try { retry.setRequestHeader('X-CSRF-TOKEN', newToken); } catch (e) {}
+                        try { retry.setRequestHeader('X-XSRF-TOKEN', newToken); } catch (e) {}
+                    }
+                    try { retry.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); } catch (e) {}
+                    var retryBody = body;
+                    if (typeof FormData !== 'undefined' && body instanceof FormData && newToken) {
+                        body.set('_token', newToken);
+                        retryBody = body;
+                    }
+                    retry.onreadystatechange = originalOnReady;
+                    if (typeof xhr.onload === 'function') retry.onload = xhr.onload.bind(xhr);
+                    if (typeof xhr.onerror === 'function') retry.onerror = xhr.onerror.bind(xhr);
+                    XS.call(retry, retryBody);
+                });
+                return;
+            }
+            if (typeof originalOnReady === 'function') {
+                return originalOnReady.apply(xhr, arguments);
+            }
+        };
+
+        return XS.call(xhr, body);
+    };
+})();

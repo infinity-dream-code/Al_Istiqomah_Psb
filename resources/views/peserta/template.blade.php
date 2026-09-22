@@ -153,10 +153,13 @@
                                 <p class="font-semibold text-gray-800">Menu</p>
                             </div>
 
-                            <a href="{{url('/ServiceLogout')}}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
-                                <i class="fas fa-user text-green-500 mr-3"></i>
-                                <span>Logout</span>
-                            </a>
+                            <form method="POST" action="{{ url('/ServiceLogout') }}" class="m-0">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors text-left">
+                                    <i class="fas fa-user text-green-500 mr-3"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -289,5 +292,6 @@
 
         console.log('PMB Dashboard loaded successfully');
     </script>
+    @include('partials.session-guard')
 </body>
 </html>

@@ -46,9 +46,23 @@ Route::get('/PmbMstPendaftarans/success_enroll/{token}', [RegisterController::cl
 Route::get('/PmbMstPendaftarans/cek_tagihan/{no_pendaftaran}', [RegisterController::class, 'cekTagihan'])->name('pmb.cekTagihan');
 
 // Login & Logout
-Route::get('/ServiceLogin', [LoginController::class, 'index']);
+Route::get('/ServiceLogin', [LoginController::class, 'index'])->name('login.form');
 Route::post('/ServiceLogin', [LoginController::class, 'login'])->name('login');
-Route::get('/ServiceLogout', [LoginController::class, 'logout'])->name('logout');
+// Logout hanya via POST (klik tombol Logout) — GET tidak pernah mematikan session
+Route::post('/ServiceLogout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/ServiceLogout', function () {
+    return redirect('/ServiceLogin');
+});
+
+// Keep-alive session + refresh CSRF (tanpa login ulang / tanpa pesan sesi)
+Route::get('/session/keepalive', function (\Illuminate\Http\Request $request) {
+    $request->session()->put('_keepalive_at', now()->timestamp);
+
+    return response()->json([
+        'ok' => true,
+        'token' => csrf_token(),
+    ])->header('Cache-Control', 'no-store, private');
+})->name('session.keepalive');
 
 /*
 |--------------------------------------------------------------------------

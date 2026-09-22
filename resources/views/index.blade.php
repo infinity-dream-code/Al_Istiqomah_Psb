@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>DEMO PSB - Penerimaan Siswa Baru 2025/2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -467,7 +468,7 @@
                       <div id="content-pembayaran" class="tab-content hidden">
   <div class="card card-body p-4 bg-white shadow-sm rounded">
 
-    <p class="pb-3 fw-bold fs-5">Revisi Redaksi Petunjuk Pembayaran</p>
+    <p class="pb-3 fw-bold fs-5">Petunjuk Pembayaran</p>
 
     <p class="pb-2 fw-bold fs-6 mt-3">Pembayaran melalui Payment Point / Teller Bank Muamalat:</p>
     <ol class="ps-3">
@@ -758,5 +759,6 @@
             }
         }
     </style>
+    @include('partials.session-guard')
 </body>
 </html>

@@ -15,11 +15,11 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, $role): Response
     {
         if (!Auth::check()) {
-            return redirect('/login');
+            return redirect('/ServiceLogin');
         }
 
         if (Auth::user()->role !== $role) {
-            return redirect('/ServiceLogin')->with('error', 'Anda tidak punya akses ke halaman ini.');
+            abort(403);
         }
 
         return $next($request);

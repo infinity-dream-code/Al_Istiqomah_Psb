@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Form Pendaftaran Siswa Baru - DEMO PSB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -282,8 +283,8 @@
                                     <input type="text" name="asal_sekolah" required placeholder="Contoh: SMA Negeri 1 Jakarta" class="form-input">
                                 </div>
                                 <div>
-                                    <label class="block label-text mb-2">Jurusan Sekolah Asal<span class="required">*</span></label>
-                                    <select name="jurusan_sekolah" required class="form-input">
+                                    <label class="block label-text mb-2">Jurusan Sekolah Asal<span class=""></span></label>
+                                    <select name="jurusan_sekolah" class="form-input">
                                         <option value="">Pilih Jurusan</option>
                                         @foreach($jurusans as $j)
                                             <option value="{{ $j->id }}">{{ strtoupper($j->nama) }}</option>
@@ -727,5 +728,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 </script>
 
+@include('partials.session-guard')
 </body>
 </html>

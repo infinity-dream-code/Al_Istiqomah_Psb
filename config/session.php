@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     /*
@@ -31,7 +29,7 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 120),
+    'lifetime' => env('SESSION_LIFETIME', 5256000),
 
     'expire_on_close' => false,
 
@@ -113,7 +111,8 @@ return [
     |
     */
 
-    'lottery' => [2, 100],
+    // Kurangi risiko hapus session aktif di Windows/file driver
+    'lottery' => [1, 1000],
 
     /*
     |--------------------------------------------------------------------------
@@ -126,10 +125,7 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
-    ),
+    'cookie' => env('SESSION_COOKIE', 'psbku_session'),
 
     /*
     |--------------------------------------------------------------------------
@@ -168,7 +164,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', false),
 
     /*
     |--------------------------------------------------------------------------
