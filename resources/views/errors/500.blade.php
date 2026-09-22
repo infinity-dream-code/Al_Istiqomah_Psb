@@ -18,27 +18,26 @@
     </style>
 </head>
 <body>
-    <p id="msg"></p>
     <script>
         (function () {
-            var path = location.pathname + location.search;
             var key = 'psbku_500_reload:' + location.pathname;
             var isLogin = /ServiceLogin/i.test(location.pathname);
 
             try {
                 if (!sessionStorage.getItem(key)) {
                     sessionStorage.setItem(key, '1');
-                    // Cache-bust reload sekali
-                    var url = location.pathname + (location.search ? location.search + '&' : '?') + '_r=' + Date.now();
-                    setTimeout(function () { location.replace(url); }, 400);
+                    var qs = location.search ? location.search + '&' : '?';
+                    setTimeout(function () {
+                        location.replace(location.pathname + qs + '_r=' + Date.now());
+                    }, 400);
                     return;
                 }
                 sessionStorage.removeItem(key);
             } catch (e) {}
 
-            // Jangan tampilkan pesan error — redirect diam-diam
+            // Setelah 1x reload masih gagal: jangan loop di login, jangan tampilkan pesan error
             if (isLogin) {
-                location.replace('/ServiceLogin');
+                location.replace('/');
                 return;
             }
             location.replace('/');

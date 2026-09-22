@@ -16,12 +16,34 @@ class LoginController extends Controller
     public function index()
     {
         try {
-            return response()->view('auth.login');
+            $html = view('auth.login')->render();
+
+            return response($html);
         } catch (\Throwable $e) {
             report($e);
 
-            // Jangan biarkan halaman login down — tampilkan view sederhana
-            return response()->view('auth.login-fallback', [], 200);
+            try {
+                return response(view('auth.login-fallback')->render());
+            } catch (\Throwable $e2) {
+                report($e2);
+
+                $token = '';
+                try {
+                    $token = csrf_token();
+                } catch (\Throwable $e3) {
+                }
+
+                return response(
+                    '<!DOCTYPE html><html><body>' .
+                    '<form method="POST" action="' . e(url('/ServiceLogin')) . '">' .
+                    '<input type="hidden" name="_token" value="' . e($token) . '">' .
+                    '<input name="username" placeholder="Username" required>' .
+                    '<input type="password" name="password" placeholder="Password" required>' .
+                    '<button type="submit">Log In</button></form></body></html>',
+                    200,
+                    ['Content-Type' => 'text/html; charset=UTF-8']
+                );
+            }
         }
     }
 
