@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Memuat ulang…</title>
+    <title></title>
     <style>
         body {
             margin: 0;
@@ -14,24 +13,35 @@
             justify-content: center;
             font-family: system-ui, sans-serif;
             background: #f8fafc;
-            color: #64748b;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
-    <p>Memuat ulang…</p>
+    <p id="msg"></p>
     <script>
         (function () {
-            var key = 'psbku_500_reload:' + location.pathname + location.search;
+            var path = location.pathname + location.search;
+            var key = 'psbku_500_reload:' + location.pathname;
+            var isLogin = /ServiceLogin/i.test(location.pathname);
+
             try {
                 if (!sessionStorage.getItem(key)) {
                     sessionStorage.setItem(key, '1');
-                    setTimeout(function () { location.reload(); }, 600);
+                    // Cache-bust reload sekali
+                    var url = location.pathname + (location.search ? location.search + '&' : '?') + '_r=' + Date.now();
+                    setTimeout(function () { location.replace(url); }, 400);
                     return;
                 }
                 sessionStorage.removeItem(key);
             } catch (e) {}
-            document.querySelector('p').textContent = 'Terjadi gangguan sementara. Silakan muat ulang halaman.';
+
+            // Jangan tampilkan pesan error — redirect diam-diam
+            if (isLogin) {
+                location.replace('/ServiceLogin');
+                return;
+            }
+            location.replace('/');
         })();
     </script>
 </body>

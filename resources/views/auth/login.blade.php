@@ -141,7 +141,7 @@
         <h1 class="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-2 form-title">DEMO PSB</h1>
         <p class="text-center text-gray-400 mb-8 text-sm font-medium tracking-wider">FORM LOGIN</p>
 
-        <form class="space-y-6 animate-fadeIn" method="POST" action="{{ route('login') }}">
+        <form class="space-y-6 animate-fadeIn" method="POST" action="{{ url('/ServiceLogin') }}">
           @csrf
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>

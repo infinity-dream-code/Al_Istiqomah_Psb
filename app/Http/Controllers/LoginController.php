@@ -15,7 +15,14 @@ class LoginController extends Controller
 {
     public function index()
     {
-        return view('auth.login');
+        try {
+            return response()->view('auth.login');
+        } catch (\Throwable $e) {
+            report($e);
+
+            // Jangan biarkan halaman login down — tampilkan view sederhana
+            return response()->view('auth.login-fallback', [], 200);
+        }
     }
 
     public function login(Request $request)

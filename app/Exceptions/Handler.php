@@ -42,15 +42,29 @@ class Handler extends ExceptionHandler
     {
         $response = parent::render($request, $e);
 
-        // Pastikan halaman 500 custom (auto-reload sekali) dipakai untuk HTML server error
+        // Jangan tutup error asli saat APP_DEBUG=true (biar ketahuan penyebabnya)
+        if (config('app.debug')) {
+            return $response;
+        }
+
+        // Production: halaman 500 custom (auto-reload) untuk GET HTML server error
         if (
             !$request->expectsJson()
             && $response->getStatusCode() >= 500
             && $request->isMethodSafe()
         ) {
-            return response()->view('errors.500', [
-                'exception' => $e,
-            ], 500);
+            try {
+                return response()->view('errors.500', [
+                    'exception' => $e,
+                ], 500);
+            } catch (Throwable $viewError) {
+                return response(
+                    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title></title></head><body>' .
+                    '<script>location.reload()</script></body></html>',
+                    500,
+                    ['Content-Type' => 'text/html; charset=UTF-8']
+                );
+            }
         }
 
         return $response;
@@ -68,12 +82,10 @@ class Handler extends ExceptionHandler
             ], 419)->header('X-CSRF-TOKEN', $token);
         }
 
-        // Sudah pernah di-retry → kembali ke halaman sebelumnya tanpa flash pesan sesi
         if ($request->boolean('_csrf_retry')) {
             return redirect()->back()->withInput($request->except(['_token', '_csrf_retry']));
         }
 
-        // Upload file tidak bisa di-replay aman → kembali diam-diam
         if (count($request->allFiles()) > 0) {
             return redirect()->back();
         }
