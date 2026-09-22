@@ -33,9 +33,11 @@ class Handler extends ExceptionHandler
     {
         $response = parent::render($request, $e);
 
-        // Debug: biarkan Ignition tampil
         if (config('app.debug') && !$request->boolean('_soft_recover')) {
-            return $response;
+            // Tetap soft-recover 419 lewat renderable di atas
+            if (!($e instanceof TokenMismatchException)) {
+                return $response;
+            }
         }
 
         if (
@@ -55,7 +57,6 @@ class Handler extends ExceptionHandler
                 ? AuthRedirect::dashboardPath()
                 : $request->fullUrl();
 
-            // Jangan pernah soft-recover ke home `/` atau login
             if (AuthRedirect::isPublicBouncePath($fallback)) {
                 $fallback = Auth::check() ? '/pages/dashboard' : $request->fullUrl();
             }
@@ -65,7 +66,7 @@ class Handler extends ExceptionHandler
                     'reloadUrl' => $request->fullUrl(),
                     'fallbackUrl' => $fallback,
                     'exception' => $e,
-                ], 200); // 200 supaya browser/extension tidak treat as hard error page
+                ], 200);
             } catch (Throwable $viewError) {
                 return response(
                     '<!DOCTYPE html><html><body><script>' .
@@ -82,7 +83,22 @@ class Handler extends ExceptionHandler
 
     private function recoverFromCsrfMismatch(Request $request)
     {
+        // Pastikan ada token session
+        if ($request->hasSession()) {
+            if (!$request->session()->token()) {
+                $request->session()->regenerateToken();
+            }
+        }
+
         $token = csrf_token();
+
+        Log::info('csrf.recover', [
+            'path' => $request->path(),
+            'method' => $request->method(),
+            'auth' => Auth::check(),
+            'user_id' => Auth::id(),
+            'retry' => $request->boolean('_csrf_retry'),
+        ]);
 
         if ($request->expectsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
@@ -92,7 +108,12 @@ class Handler extends ExceptionHandler
             ], 419)->header('X-CSRF-TOKEN', $token);
         }
 
+        // Sudah retry sekali: kembali diam-diam (jangan ke login)
         if ($request->boolean('_csrf_retry')) {
+            if (Auth::check()) {
+                return redirect()->to(AuthRedirect::dashboardPath());
+            }
+
             return redirect()->back()->withInput($request->except(['_token', '_csrf_retry']));
         }
 
@@ -104,6 +125,7 @@ class Handler extends ExceptionHandler
             return redirect()->to($request->fullUrl());
         }
 
+        // Auto-resubmit form dengan token baru (status 200, bukan halaman error 419)
         return response()->view('errors.csrf-retry', [
             'token' => $token,
             'action' => $request->fullUrl(),

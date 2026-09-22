@@ -1,6 +1,6 @@
 /**
  * Session keep-alive + silent CSRF (419) recovery.
- * Tidak menampilkan notifikasi sesi / tidak redirect ke login.
+ * Refresh token sebelum submit form supaya 419 jarang muncul.
  */
 (function () {
     if (window.__psbkuSessionGuard) return;
@@ -48,7 +48,8 @@
 
     window.__psbkuRefreshCsrf = refreshToken;
 
-    setInterval(refreshToken, 5 * 60 * 1000);
+    // Keep-alive tiap 4 menit + saat tab aktif lagi
+    setInterval(refreshToken, 4 * 60 * 1000);
     if (document.readyState === 'complete') {
         refreshToken();
     } else {
@@ -57,6 +58,25 @@
     document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'visible') refreshToken();
     });
+
+    // Sebelum submit form POST: refresh token dulu (cegah 419)
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (!form || form.tagName !== 'FORM') return;
+        var method = (form.getAttribute('method') || 'GET').toUpperCase();
+        if (method === 'GET') return;
+        if (form.dataset.csrfReady === '1') return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        refreshToken().finally(function () {
+            setToken(currentToken());
+            form.dataset.csrfReady = '1';
+            // Native submit tanpa trigger listener lagi
+            HTMLFormElement.prototype.submit.call(form);
+        });
+    }, true);
 
     function headersToObject(headers) {
         if (!headers) return {};
@@ -73,7 +93,7 @@
         var headers = headersToObject(init.headers);
         if (token) {
             headers['X-CSRF-TOKEN'] = token;
-            headers['X-XSRF-TOKEN'] = token;
+            // Jangan set X-XSRF-TOKEN dengan plain token (harus encrypted cookie)
         }
         headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
         init.headers = headers;
@@ -88,10 +108,6 @@
         return init;
     }
 
-    function tokenFrom419(response) {
-        return response.headers.get('X-CSRF-TOKEN') || currentToken();
-    }
-
     window.fetch = function (input, init) {
         init = init || {};
         if (init._csrfRetried) {
@@ -99,7 +115,7 @@
         }
         return nativeFetch(input, init).then(function (response) {
             if (response.status !== 419) return response;
-            var headerToken = tokenFrom419(response);
+            var headerToken = response.headers.get('X-CSRF-TOKEN');
             return refreshToken().then(function (token) {
                 var nextInit = withCsrfHeaders(
                     Object.assign({}, init, { _csrfRetried: true }),
@@ -128,7 +144,6 @@
         var token = currentToken();
         if (token) {
             try { xhr.setRequestHeader('X-CSRF-TOKEN', token); } catch (e) {}
-            try { xhr.setRequestHeader('X-XSRF-TOKEN', token); } catch (e) {}
         }
 
         var originalOnReady = xhr.onreadystatechange;
@@ -141,7 +156,6 @@
                     retry.open(xhr.__psbkuMethod, xhr.__psbkuUrl, xhr.__psbkuAsync);
                     if (newToken) {
                         try { retry.setRequestHeader('X-CSRF-TOKEN', newToken); } catch (e) {}
-                        try { retry.setRequestHeader('X-XSRF-TOKEN', newToken); } catch (e) {}
                     }
                     try { retry.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); } catch (e) {}
                     var retryBody = body;

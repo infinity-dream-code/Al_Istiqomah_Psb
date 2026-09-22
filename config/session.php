@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'file'),
+    'driver' => env('SESSION_DRIVER', 'database'),
 
     /*
     |--------------------------------------------------------------------------
@@ -111,8 +111,8 @@ return [
     |
     */
 
-    // Kurangi risiko hapus session aktif di Windows/file driver
-    'lottery' => [1, 1000],
+    // Matikan sweep agresif (bisa bikin session "hilang" di Windows)
+    'lottery' => [0, 100],
 
     /*
     |--------------------------------------------------------------------------

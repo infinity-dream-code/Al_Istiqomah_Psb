@@ -111,6 +111,9 @@ class LoginController extends Controller
         Auth::login($user, false);
         $request->session()->regenerate();
 
+        // Cookie cadangan supaya tidak ke-logout meski session sesaat hilang
+        cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeCookie((int) $user->id));
+
         $intendedRaw = $request->session()->get('url.intended');
         $target = $this->resolvePostLoginRedirect($request, $redirectTo);
 
@@ -139,7 +142,9 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/ServiceLogin')->with('success', 'Anda berhasil logout.');
+        return redirect('/ServiceLogin')
+            ->with('success', 'Anda berhasil logout.')
+            ->withCookie(\App\Http\Middleware\RestoreAuthFromCookie::forgetCookie());
     }
 
     /**
