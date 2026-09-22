@@ -2,66 +2,76 @@
 
 namespace App\Exceptions;
 
+use App\Support\AuthRedirect;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * The list of the inputs that are never flashed to the session on validation exceptions.
-     *
-     * @var array<int, string>
-     */
     protected $dontFlash = [
         'current_password',
         'password',
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
             //
         });
 
-        // CSRF mismatch → recover diam-diam (refresh token + retry), tanpa pesan / tanpa redirect login
         $this->renderable(function (TokenMismatchException $e, Request $request) {
             return $this->recoverFromCsrfMismatch($request);
         });
     }
 
-    /**
-     * Render an exception into an HTTP response.
-     */
     public function render($request, Throwable $e)
     {
         $response = parent::render($request, $e);
 
-        // Jangan tutup error asli saat APP_DEBUG=true (biar ketahuan penyebabnya)
-        if (config('app.debug')) {
+        // Debug: biarkan Ignition tampil
+        if (config('app.debug') && !$request->boolean('_soft_recover')) {
             return $response;
         }
 
-        // Production: halaman 500 custom (auto-reload) untuk GET HTML server error
         if (
             !$request->expectsJson()
             && $response->getStatusCode() >= 500
             && $request->isMethodSafe()
         ) {
+            Log::error('http.500_soft_recover', [
+                'path' => $request->fullUrl(),
+                'auth' => Auth::check(),
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'class' => get_class($e),
+            ]);
+
+            $fallback = Auth::check()
+                ? AuthRedirect::dashboardPath()
+                : $request->fullUrl();
+
+            // Jangan pernah soft-recover ke home `/` atau login
+            if (AuthRedirect::isPublicBouncePath($fallback)) {
+                $fallback = Auth::check() ? '/pages/dashboard' : $request->fullUrl();
+            }
+
             try {
-                return response()->view('errors.500', [
+                return response()->view('errors.soft-recover', [
+                    'reloadUrl' => $request->fullUrl(),
+                    'fallbackUrl' => $fallback,
                     'exception' => $e,
-                ], 500);
+                ], 200); // 200 supaya browser/extension tidak treat as hard error page
             } catch (Throwable $viewError) {
                 return response(
-                    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title></title></head><body>' .
-                    '<script>location.reload()</script></body></html>',
-                    500,
+                    '<!DOCTYPE html><html><body><script>' .
+                    'location.replace(' . json_encode($request->fullUrl()) . ');' .
+                    '</script></body></html>',
+                    200,
                     ['Content-Type' => 'text/html; charset=UTF-8']
                 );
             }

@@ -5,54 +5,76 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Retry GET sekali untuk error transient (DB lock/deadlock/gone away, session lock).
- *
- * Catatan Laravel 10+: exception di dalam pipeline sering sudah di-render jadi
- * Response 500, jadi kita cek status response juga — bukan hanya catch Throwable.
+ * Retry GET hingga 2x untuk error transient + reconnect DB bila perlu.
+ * Tidak mengubah auth / tidak redirect ke login atau home.
  */
 class RetryTransientErrors
 {
+    private const MAX_RETRIES = 2;
+
     public function handle(Request $request, Closure $next): Response
     {
-        try {
-            $response = $next($request);
-        } catch (Throwable $e) {
-            if (!$this->shouldRetryException($request, $e)) {
-                throw $e;
+        $attempt = 0;
+
+        while (true) {
+            try {
+                $response = $next($request);
+
+                if (
+                    $attempt < self::MAX_RETRIES
+                    && $this->shouldRetryResponse($request, $response, $attempt)
+                ) {
+                    $this->prepareRetry($request, $attempt, $response);
+                    $attempt++;
+                    continue;
+                }
+
+                return $response;
+            } catch (Throwable $e) {
+                if ($attempt >= self::MAX_RETRIES || !$this->shouldRetryException($request, $e)) {
+                    throw $e;
+                }
+
+                $this->prepareRetry($request, $attempt, null, $e);
+                $attempt++;
             }
-
-            return $this->retry($request, $next);
         }
-
-        if ($this->shouldRetryResponse($request, $response)) {
-            return $this->retry($request, $next);
-        }
-
-        return $response;
     }
 
-    private function retry(Request $request, Closure $next): Response
+    private function prepareRetry(Request $request, int $attempt, ?Response $response = null, ?Throwable $e = null): void
     {
-        $request->attributes->set('_transient_retried', true);
-        usleep(150000);
+        $request->attributes->set('_transient_retried', $attempt + 1);
 
-        try {
-            return $next($request);
-        } catch (Throwable $e) {
-            throw $e;
+        Log::warning('transient.retry', [
+            'attempt' => $attempt + 1,
+            'path' => $request->path(),
+            'status' => $response?->getStatusCode(),
+            'error' => $e?->getMessage(),
+        ]);
+
+        if ($e && $this->isConnectionProblem($e)) {
+            try {
+                DB::reconnect();
+            } catch (Throwable $ignored) {
+            }
+        } elseif ($response && $response->getStatusCode() >= 500) {
+            try {
+                DB::reconnect();
+            } catch (Throwable $ignored) {
+            }
         }
+
+        usleep(200000 * ($attempt + 1));
     }
 
     private function shouldRetryException(Request $request, Throwable $e): bool
     {
-        if ($request->attributes->get('_transient_retried')) {
-            return false;
-        }
-
         if (!in_array($request->method(), ['GET', 'HEAD'], true)) {
             return false;
         }
@@ -60,12 +82,8 @@ class RetryTransientErrors
         return $this->isTransient($e);
     }
 
-    private function shouldRetryResponse(Request $request, Response $response): bool
+    private function shouldRetryResponse(Request $request, Response $response, int $attempt): bool
     {
-        if ($request->attributes->get('_transient_retried')) {
-            return false;
-        }
-
         if (!in_array($request->method(), ['GET', 'HEAD'], true)) {
             return false;
         }
@@ -74,20 +92,24 @@ class RetryTransientErrors
             return false;
         }
 
-        // Laravel Response::withException — pakai exception asli bila ada
-        $exception = null;
-        if (method_exists($response, 'exception')) {
-            $exception = $response->exception;
-        } elseif (property_exists($response, 'exception')) {
-            $exception = $response->exception;
-        }
-
+        $exception = $response->exception ?? null;
         if ($exception instanceof Throwable) {
             return $this->isTransient($exception);
         }
 
-        // Tanpa exception detail: tetap retry GET 500 sekali (transient sering sudah di-render)
+        // GET 500 tanpa detail: anggap transient, retry
         return true;
+    }
+
+    private function isConnectionProblem(Throwable $e): bool
+    {
+        $message = strtolower($e->getMessage());
+
+        return str_contains($message, 'gone away')
+            || str_contains($message, 'lost connection')
+            || str_contains($message, 'too many connections')
+            || str_contains($message, 'refused')
+            || ($e instanceof QueryException && in_array((string) ($e->errorInfo[1] ?? ''), ['2006', '2013', '1040'], true));
     }
 
     private function isTransient(Throwable $e): bool
@@ -111,8 +133,6 @@ class RetryTransientErrors
             'try restarting transaction',
             'resource temporarily unavailable',
             'unable to acquire',
-            'session has already been started',
-            'failed to open stream: permission denied',
             'database is locked',
             'sqlstate[40p01]',
             'sqlstate[40001]',
@@ -125,10 +145,6 @@ class RetryTransientErrors
             }
         }
 
-        if ($e->getPrevious()) {
-            return $this->isTransient($e->getPrevious());
-        }
-
-        return false;
+        return $e->getPrevious() ? $this->isTransient($e->getPrevious()) : false;
     }
 }
