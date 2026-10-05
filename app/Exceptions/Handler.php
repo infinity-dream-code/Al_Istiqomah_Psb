@@ -33,32 +33,24 @@ class Handler extends ExceptionHandler
     {
         $response = parent::render($request, $e);
 
-        if (config('app.debug') && !$request->boolean('_soft_recover')) {
-            // Tetap soft-recover 419 lewat renderable di atas
-            if (!($e instanceof TokenMismatchException)) {
-                return $response;
-            }
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return $response;
         }
 
-        if (
-            !$request->expectsJson()
-            && $response->getStatusCode() >= 500
-            && $request->isMethodSafe()
-        ) {
+        if ($response->getStatusCode() >= 500) {
             Log::error('http.500_soft_recover', [
                 'path' => $request->fullUrl(),
                 'auth' => Auth::check(),
                 'user_id' => Auth::id(),
+                'role' => Auth::user()?->role,
                 'error' => $e->getMessage(),
                 'class' => get_class($e),
             ]);
 
-            $fallback = Auth::check()
-                ? AuthRedirect::dashboardPath()
-                : $request->fullUrl();
+            $fallback = Auth::check() ? AuthRedirect::dashboardPath() : '';
 
-            if (AuthRedirect::isPublicBouncePath($fallback)) {
-                $fallback = Auth::check() ? '/pages/dashboard' : $request->fullUrl();
+            if (!$request->isMethodSafe()) {
+                return redirect()->to($fallback !== '' ? $fallback : url()->previous());
             }
 
             try {

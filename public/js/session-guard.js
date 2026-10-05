@@ -10,6 +10,12 @@
     var keepaliveUrl = (document.querySelector('meta[name="session-keepalive"]') || {}).content
         || '/session/keepalive';
     var refreshing = null;
+    var navigating = false;
+
+    // Saat klik menu, batalkan keepalive supaya tidak race dengan request halaman baru
+    // (file session Windows sering “kosong” kalau dua request nulis bersamaan).
+    window.addEventListener('pagehide', function () { navigating = true; });
+    window.addEventListener('beforeunload', function () { navigating = true; });
 
     function setToken(token) {
         if (!token) return token;
@@ -27,6 +33,7 @@
     }
 
     function refreshToken() {
+        if (navigating) return Promise.resolve(currentToken());
         if (refreshing) return refreshing;
         refreshing = nativeFetch(keepaliveUrl, {
             method: 'GET',

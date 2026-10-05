@@ -26,9 +26,14 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        // Pastikan cookie domain host-only (cegah nabrak antar subdomain project)
-        if (config('session.domain') === '' || config('session.domain') === false) {
-            config(['session.domain' => null]);
+        // Selalu host-only. Domain induk (.smartpayment.co.id) bikin session
+        // kebaca project lain, lalu menu admin kebuka sebagai siswa.
+        config(['session.domain' => null]);
+
+        $cookie = (string) config('session.cookie');
+        if ($cookie !== '' && !str_ends_with($cookie, '_honly')) {
+            // Nama baru: cookie session lama (domain induk) tidak ikut terbawa.
+            config(['session.cookie' => $cookie . '_honly']);
         }
     }
 }

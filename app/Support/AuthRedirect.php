@@ -56,4 +56,54 @@ class AuthRedirect
         return in_array($path, ['/', '/ServiceLogin', '/enroll', '/login', '/home'], true)
             || str_starts_with($path, '/ServiceLogin');
     }
+
+    public static function normalizePath(?string $url): string
+    {
+        $path = parse_url((string) $url, PHP_URL_PATH);
+        if (!is_string($path) || $path === '') {
+            $path = (string) $url;
+        }
+        $path = '/' . ltrim($path, '/');
+
+        return $path === '//' ? '/' : $path;
+    }
+
+    /**
+     * Halaman khusus siswa. Admin / role unit tidak boleh diarahkan ke sini.
+     */
+    public static function isPesertaPath(?string $url): bool
+    {
+        $path = self::normalizePath($url);
+
+        return $path === '/pages/dashboard'
+            || $path === '/PmbMstPendaftarans/lengkapi_data'
+            || str_starts_with($path, '/peserta/');
+    }
+
+    /**
+     * URL yang boleh dibuka user ini setelah login (halaman yang tadi ingin dikunjungi).
+     */
+    public static function userMayAccessPath($user, ?string $url): bool
+    {
+        if (!$user || !$url) {
+            return false;
+        }
+
+        $path = self::normalizePath($url);
+        if (self::isPublicBouncePath($path)) {
+            return false;
+        }
+
+        $pesertaPath = self::isPesertaPath($path);
+        if (($user->role ?? null) === 'peserta') {
+            return $pesertaPath;
+        }
+
+        if ($pesertaPath) {
+            return false;
+        }
+
+        return str_starts_with($path, '/pages/')
+            || str_starts_with($path, '/PmbMstPendaftarans/');
+    }
 }

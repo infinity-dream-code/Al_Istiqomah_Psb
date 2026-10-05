@@ -50,8 +50,20 @@
         return;
     }
 
-    // Habis retry: STOP. Jangan redirect lagi (itu yang bikin loop ?_r=&_r=…)
     try { sessionStorage.removeItem(key); } catch (e) {}
+
+    // Habis retry: admin ke dashboard admin, siswa ke dashboard siswa.
+    // Jangan paksa ke login dan jangan lempar admin ke halaman siswa.
+    if (fallbackUrl) {
+        try {
+            var dest = new URL(fallbackUrl, location.origin);
+            if (dest.pathname && dest.pathname !== location.pathname) {
+                location.replace(dest.pathname + dest.search);
+                return;
+            }
+        } catch (e) {}
+    }
+
     var el = document.getElementById('stop');
     if (el) el.style.display = 'block';
 })();

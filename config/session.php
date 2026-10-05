@@ -147,7 +147,9 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN') ?: null,
+    // Host-only. Jangan baca SESSION_DOMAIN — nilai .smartpayment.co.id
+    // membuat session/login nyampur antar subdomain.
+    'domain' => null,
 
     /*
     |--------------------------------------------------------------------------

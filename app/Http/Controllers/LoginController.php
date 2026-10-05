@@ -110,9 +110,14 @@ class LoginController extends Controller
         // remember=false: tabel user tidak punya kolom remember_token
         Auth::login($user, false);
         $request->session()->regenerate();
+        $request->session()->put('auth_backup_uid', (int) $user->id);
+        $request->session()->put('auth_backup_role', (string) $user->role);
 
-        // Cookie cadangan supaya tidak ke-logout meski session sesaat hilang
-        cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeCookie((int) $user->id));
+        // Cookie cadangan: session file kadang kosong saat klik menu
+        cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeCookie((int) $user->id, (string) $user->role));
+        if ($user->role !== 'peserta') {
+            cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeStaffCookie((int) $user->id, (string) $user->role));
+        }
 
         $intendedRaw = $request->session()->get('url.intended');
         $target = $this->resolvePostLoginRedirect($request, $redirectTo);
@@ -139,12 +144,14 @@ class LoginController extends Controller
 
         Auth::logout();
 
+        $request->session()->forget(['auth_backup_uid', 'auth_backup_role']);
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/ServiceLogin')
             ->with('success', 'Anda berhasil logout.')
-            ->withCookie(\App\Http\Middleware\RestoreAuthFromCookie::forgetCookie());
+            ->withCookie(\App\Http\Middleware\RestoreAuthFromCookie::forgetCookie())
+            ->withCookie(\App\Http\Middleware\RestoreAuthFromCookie::forgetStaffCookie());
     }
 
     /**
@@ -159,41 +166,15 @@ class LoginController extends Controller
             return $default;
         }
 
-        $path = parse_url($intended, PHP_URL_PATH);
-        if ($path === null || $path === '') {
-            $path = '/';
-        }
-
-        $blockedExact = ['/', '/ServiceLogin', '/enroll', '/login', '/home'];
-        $blockedPrefix = ['/ServiceLogin', '/enroll'];
-
-        if (in_array($path, $blockedExact, true)) {
-            Log::info('login.ignore_intended', [
-                'intended' => $intended,
-                'reason' => 'public_or_login',
-                'fallback' => $default,
-            ]);
-
-            return $default;
-        }
-
-        foreach ($blockedPrefix as $prefix) {
-            if (str_starts_with($path, $prefix)) {
-                return $default;
-            }
-        }
-
-        // Hanya izinkan intended ke area app yang dilindungi
-        $allowedPrefixes = ['/pages/', '/PmbMstPendaftarans/'];
-        foreach ($allowedPrefixes as $prefix) {
-            if (str_starts_with($path, $prefix)) {
-                return $intended;
-            }
+        $user = Auth::user();
+        if ($user && \App\Support\AuthRedirect::userMayAccessPath($user, $intended)) {
+            return $intended;
         }
 
         Log::info('login.ignore_intended', [
             'intended' => $intended,
-            'reason' => 'not_app_area',
+            'reason' => 'wrong_role_or_public',
+            'role' => $user->role ?? null,
             'fallback' => $default,
         ]);
 

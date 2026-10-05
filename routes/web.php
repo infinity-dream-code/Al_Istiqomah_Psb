@@ -56,10 +56,14 @@ Route::get('/ServiceLogout', function () {
 
 // Keep-alive session + refresh CSRF (tanpa login ulang / tanpa pesan sesi)
 Route::get('/session/keepalive', function (\Illuminate\Http\Request $request) {
-    $request->session()->put('_keepalive_at', now()->timestamp);
+    // Jangan rewrite session kalau belum login — kurangi race file session.
+    if ($request->hasSession() && $request->session()->isStarted()) {
+        $request->session()->put('_keepalive_at', now()->timestamp);
+    }
 
     return response()->json([
         'ok' => true,
+        'auth' => auth()->check(),
         'token' => csrf_token(),
     ])->header('Cache-Control', 'no-store, private');
 })->name('session.keepalive');
