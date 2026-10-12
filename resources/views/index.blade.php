@@ -559,7 +559,7 @@
 
     <!-- WhatsApp Floating Button -->
     <div class="fixed bottom-6 right-6 z-50">
-    <a href="https://wa.me/6288233952051?text=Halo%20DEMO%20PMB,%20saya%20ingin%20bertanya%20tentang%20pendaftaran%20mahasiswa%20baru" 
+    <a href="https://wa.me/6289513300501?text=Halo%20DEMO%20PMB,%20saya%20ingin%20bertanya%20tentang%20pendaftaran%20mahasiswa%20baru" 
        target="_blank" 
        class="bg-green-500 hover:bg-green-600 text-white w-16 h-16 flex items-center justify-center rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 animate-pulse hover:animate-none group relative">
         
