@@ -211,11 +211,11 @@
     <div class="container">
         <div class="content">
             <div class="header">
-                <div class="logo"><img src="{{ asset('logo.png') }}" alt="Logo PSB Shine Al-Falah"></div>
+                <div class="logo"><img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}"></div>
                 <div class="school-info">
                     <div class="school-title">PANITIA PENERIMAAN SISWA BARU (PSB)</div>
                     <div class="school-name">{{ $peserta->fakultas }}</div>
-                    <div class="address">Kota Semarang</div>
+                    <div class="address">{{ config('client.region') }}</div>
                     <div class="website-email">Website : {{ url('/') }} || Email :</div>
                 </div>
             </div>

@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>PSB DEMO</title>
+  <title>PSB {{ config('client.name') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * {
@@ -98,8 +99,8 @@
 
     <div class="w-1/2 gradient-bg flex items-center justify-center p-12 relative overflow-hidden left-panel">
       <div class="animate-slideInLeft">
-        <img src="https://demo.pmb.smartpayment.co.id/images/bg-logo.png"
-             alt="PSB Demo Logo"
+        <img src="{{ asset(config('client.logo')) }}"
+             alt="Logo {{ config('client.name') }}"
              class="max-w-full max-h-96 object-contain animate-floatSmooth logo-img"
              onerror="this.style.display='none';">
       </div>
@@ -138,11 +139,13 @@
           </div>
         @endif
 
-        <h1 class="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-2 form-title">DEMO PSB</h1>
+        <h1 class="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-2 form-title">PSB {{ config('client.name') }}</h1>
+        <p class="text-center text-gray-500 mb-1 text-sm">{{ config('client.region') }}</p>
         <p class="text-center text-gray-400 mb-8 text-sm font-medium tracking-wider">FORM LOGIN</p>
 
         <form class="space-y-6 animate-fadeIn" method="POST" action="{{ url('/ServiceLogin') }}">
           @csrf
+          <input type="hidden" name="next" value="{{ $next ?? '' }}">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
             <input

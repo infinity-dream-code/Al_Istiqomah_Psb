@@ -14,21 +14,40 @@ use App\Models\MasterRole;
 
 class LoginController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $next = $this->requestedNext($request);
+
+        // Session putus tapi cookie cadangan masih valid: buat ulang session lalu
+        // kembalikan user ke halaman yang tadi dibuka, tanpa form login.
+        if ($next !== null) {
+            \App\Http\Middleware\RestoreAuthFromCookie::attemptForPath($request, $next);
+        }
+
         if (Auth::check()) {
-            return redirect()->to(\App\Support\AuthRedirect::dashboardPath());
+            $target = $next !== null && \App\Support\AuthRedirect::userMayAccessPath(Auth::user(), $next)
+                ? $next
+                : \App\Support\AuthRedirect::dashboardPath();
+            $request->session()->forget('url.intended');
+
+            Log::info('login.page_bounce_back', [
+                'user_id' => Auth::id(),
+                'next' => $next,
+                'target' => $target,
+            ]);
+
+            return redirect()->to($target);
         }
 
         try {
-            $html = view('auth.login')->render();
+            $html = view('auth.login', ['next' => $next])->render();
 
             return response($html);
         } catch (\Throwable $e) {
             report($e);
 
             try {
-                return response(view('auth.login-fallback')->render());
+                return response(view('auth.login-fallback', ['next' => $next])->render());
             } catch (\Throwable $e2) {
                 report($e2);
 
@@ -42,6 +61,7 @@ class LoginController extends Controller
                     '<!DOCTYPE html><html><body>' .
                     '<form method="POST" action="' . e(url('/ServiceLogin')) . '">' .
                     '<input type="hidden" name="_token" value="' . e($token) . '">' .
+                    '<input type="hidden" name="next" value="' . e((string) $next) . '">' .
                     '<input name="username" placeholder="Username" required>' .
                     '<input type="password" name="password" placeholder="Password" required>' .
                     '<button type="submit">Log In</button></form></body></html>',
@@ -160,25 +180,41 @@ class LoginController extends Controller
     private function resolvePostLoginRedirect(Request $request, string $defaultPath): string
     {
         $default = '/' . ltrim($defaultPath, '/');
-        $intended = $request->session()->pull('url.intended');
-
-        if (!$intended) {
-            return $default;
-        }
-
         $user = Auth::user();
-        if ($user && \App\Support\AuthRedirect::userMayAccessPath($user, $intended)) {
-            return $intended;
-        }
 
-        Log::info('login.ignore_intended', [
-            'intended' => $intended,
-            'reason' => 'wrong_role_or_public',
-            'role' => $user->role ?? null,
-            'fallback' => $default,
+        // url.intended (session) bisa ikut hilang kalau session putus; `next` dari form jadi cadangan.
+        $candidates = array_filter([
+            \App\Support\AuthRedirect::safeRelativeUrl($request->session()->pull('url.intended')),
+            $this->requestedNext($request),
         ]);
 
+        foreach ($candidates as $candidate) {
+            if ($user && \App\Support\AuthRedirect::userMayAccessPath($user, $candidate)) {
+                return $candidate;
+            }
+        }
+
+        if ($candidates) {
+            Log::info('login.ignore_intended', [
+                'intended' => array_values($candidates),
+                'reason' => 'wrong_role_or_public',
+                'role' => $user->role ?? null,
+                'fallback' => $default,
+            ]);
+        }
+
         return $default;
+    }
+
+    private function requestedNext(Request $request): ?string
+    {
+        $next = \App\Support\AuthRedirect::safeRelativeUrl($request->input('next'));
+
+        if ($next === null || \App\Support\AuthRedirect::isPublicBouncePath($next)) {
+            return null;
+        }
+
+        return $next;
     }
 
     private function resolveRedirectPath(User $user): ?string

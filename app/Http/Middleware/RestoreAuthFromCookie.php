@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\User;
 use App\Support\AppIdentity;
+use App\Support\AuthRedirect;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,15 +41,20 @@ class RestoreAuthFromCookie
 
     /**
      * Pulihkan / koreksi auth dari cookie. Aman dipanggil berkali-kali.
+     *
+     * $context = request "halaman tujuan" untuk menentukan role yang dibutuhkan
+     * (dipakai keepalive & halaman login). Cookie/session tetap dari $request.
      */
-    public static function attempt(Request $request): bool
+    public static function attempt(Request $request, ?Request $context = null): bool
     {
-        if (!self::shouldConsiderRestore($request)) {
+        $context = $context ?: $request;
+
+        if (!self::shouldConsiderRestore($context)) {
             return Auth::check();
         }
 
-        $requiredRole = self::requiredRole($request);
-        $preferStaff = $requiredRole === 'admin' || self::isStaffPath($request);
+        $requiredRole = self::requiredRole($context);
+        $preferStaff = $requiredRole === 'admin' || self::isStaffPath($context);
 
         // Cadangan di dalam session (kalau guard key hilang tapi file session masih ada)
         if (!Auth::check()) {
@@ -81,6 +87,37 @@ class RestoreAuthFromCookie
         }
 
         return $sessionOk;
+    }
+
+    /**
+     * Pulihkan auth seolah-olah user sedang membuka $path (path relatif, mis. "/pages/dashboard").
+     */
+    public static function attemptForPath(Request $request, ?string $path): bool
+    {
+        $context = self::contextForPath($path);
+        if (!$context) {
+            return Auth::check();
+        }
+
+        return self::attempt($request, $context);
+    }
+
+    private static function contextForPath(?string $path): ?Request
+    {
+        $path = AuthRedirect::safeRelativeUrl($path);
+        if ($path === null) {
+            return null;
+        }
+
+        try {
+            $context = Request::create($path, 'GET');
+            $route = app('router')->getRoutes()->match($context);
+            $context->setRouteResolver(fn () => $route);
+
+            return $context;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     public static function cookieName(): string
@@ -192,8 +229,7 @@ class RestoreAuthFromCookie
             'ServiceLogin',
             'ServiceLogout',
             'enroll',
-            'enroll/*',
-            'api/*'
+            'enroll/*'
         )) {
             return false;
         }

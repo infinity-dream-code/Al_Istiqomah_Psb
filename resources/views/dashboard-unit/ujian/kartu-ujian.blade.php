@@ -39,7 +39,7 @@
                 <td style="border:none;"></td>
  <td style="border:none;"></td>
    <td style="width: 80px; border:none; vertical-align:middle;">
-    <img src="{{ public_path('logo.png') }}" style="width:70px;">
+    <img src="{{ public_path(config('client.logo')) }}" style="width:70px;">
 </td>
 
     <td style="border:none; text-align:left; padding-top:5px; padding-left:20px;">
@@ -103,7 +103,7 @@
 
         <tr>
             <td>Lokasi</td>
-            <td colspan="3"> Semarang </td>
+            <td colspan="3"> {{ config('client.city') }} </td>
         </tr>
     </tbody>
 </table>

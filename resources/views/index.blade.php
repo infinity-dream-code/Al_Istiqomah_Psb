@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>DEMO PSB - Penerimaan Siswa Baru 2025/2026</title>
+    <title>PSB {{ config('client.name') }} - Penerimaan Siswa Baru 2025/2026</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <script src="https://cdn.tailwindcss.com"></script>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -41,7 +42,13 @@
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
-                <div class="text-3xl font-bold text-pmb-green-700">DEMO PSB</div>
+                <a href="{{ url('/') }}" class="no-underline flex items-center gap-3">
+                    <img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}" class="h-12 w-12 object-contain">
+                    <div class="leading-tight">
+                        <div class="text-2xl md:text-3xl font-bold text-pmb-green-700">PSB {{ config('client.name') }}</div>
+                        <div class="text-xs text-gray-500">{{ config('client.region') }}</div>
+                    </div>
+                </a>
                 <div class="hidden md:flex space-x-8">
                    <a href="{{url('/')}}" 
    class="no-underline text-pmb-green-700 font-semibold border-b-2 border-pmb-green-700 pb-1">
@@ -331,7 +338,7 @@
       <section class="bg-pmb-green-700 py-24">
     <div class="max-w-6xl mx-auto px-6 text-center">
         <!-- Header -->
-        <div class="text-yellow-400 font-semibold mb-8 text-lg">Kenapa harus DEMO PSB?</div>
+        <div class="text-yellow-400 font-semibold mb-8 text-lg">Kenapa harus PSB {{ config('client.name') }}?</div>
         
         <!-- Visi Section -->
         <h2 class="text-5xl font-bold text-white mb-8">Visi</h2>

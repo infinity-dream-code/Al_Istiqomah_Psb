@@ -1,5 +1,6 @@
 /**
- * Session keep-alive + silent CSRF (419) recovery.
+ * Session keep-alive + silent CSRF (419) / session hilang (401) recovery.
+ * Keepalive mengirim path halaman aktif supaya server bisa membuat ulang session dari cookie cadangan.
  * Refresh token sebelum submit form supaya 419 jarang muncul.
  */
 (function () {
@@ -35,7 +36,9 @@
     function refreshToken() {
         if (navigating) return Promise.resolve(currentToken());
         if (refreshing) return refreshing;
-        refreshing = nativeFetch(keepaliveUrl, {
+        var url = keepaliveUrl + (keepaliveUrl.indexOf('?') >= 0 ? '&' : '?')
+            + 'path=' + encodeURIComponent(location.pathname + location.search);
+        refreshing = nativeFetch(url, {
             method: 'GET',
             credentials: 'same-origin',
             headers: {
@@ -121,7 +124,7 @@
             return nativeFetch(input, init);
         }
         return nativeFetch(input, init).then(function (response) {
-            if (response.status !== 419) return response;
+            if (response.status !== 419 && response.status !== 401) return response;
             var headerToken = response.headers.get('X-CSRF-TOKEN');
             return refreshToken().then(function (token) {
                 var nextInit = withCsrfHeaders(
@@ -155,7 +158,7 @@
 
         var originalOnReady = xhr.onreadystatechange;
         xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 419 && !xhr.__psbkuRetried) {
+            if (xhr.readyState === 4 && (xhr.status === 419 || xhr.status === 401) && !xhr.__psbkuRetried) {
                 xhr.__psbkuRetried = true;
                 refreshToken().then(function (newToken) {
                     var retry = new XMLHttpRequest();

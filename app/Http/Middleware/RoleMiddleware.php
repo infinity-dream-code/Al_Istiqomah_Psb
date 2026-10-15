@@ -26,7 +26,11 @@ class RoleMiddleware
                 'has_staff_cookie' => $request->cookies->has(RestoreAuthFromCookie::staffCookieName()),
             ]);
 
-            return redirect()->guest('/ServiceLogin');
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+
+            return redirect()->guest(AuthRedirect::loginUrlFor($request));
         }
 
         if (Auth::user()->role !== $role) {

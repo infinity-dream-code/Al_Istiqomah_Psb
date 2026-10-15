@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login</title>
+    <title>Login - PSB {{ config('client.name') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <style>
         body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh; align-items: center; justify-content: center; background: #f8fafc; margin: 0; }
         form { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.08); width: 100%; max-width: 360px; }
@@ -17,7 +18,8 @@
 <body>
     <form method="POST" action="{{ url('/ServiceLogin') }}">
         @csrf
-        <h1>DEMO PSB</h1>
+        <input type="hidden" name="next" value="{{ $next ?? '' }}">
+        <h1>PSB {{ config('client.name') }}</h1>
         <label>Username</label>
         <input type="text" name="username" required autocomplete="username">
         <label>Password</label>

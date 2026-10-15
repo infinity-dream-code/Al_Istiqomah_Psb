@@ -61,6 +61,11 @@ Route::get('/session/keepalive', function (\Illuminate\Http\Request $request) {
         $request->session()->put('_keepalive_at', now()->timestamp);
     }
 
+    // Session hilang di tengah jalan: buat ulang dari cookie cadangan sesuai halaman yang sedang dibuka.
+    if (!auth()->check() && $request->filled('path')) {
+        \App\Http\Middleware\RestoreAuthFromCookie::attemptForPath($request, (string) $request->query('path'));
+    }
+
     return response()->json([
         'ok' => true,
         'auth' => auth()->check(),

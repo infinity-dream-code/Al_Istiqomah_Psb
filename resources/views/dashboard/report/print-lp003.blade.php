@@ -27,8 +27,9 @@
 @foreach($chunks as $page => $list)
 <div class="container {{ $page > 0 ? 'page-break' : '' }}">
     <div class="header">
-        <div class="logo"><img src="{{ asset('logo.png') }}" alt="Logo PSB Shine Al-Falah"></div>
-       
+        <div class="logo"><img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}"></div>
+        <div class="school-name">PSB {{ config('client.name') }}</div>
+        <div class="address">{{ config('client.region') }}</div>
     </div>
 
     <div class="date-print">Cetak: {{ $today }}</div>
@@ -66,7 +67,7 @@
     @if($page+1 == $chunks->count())
     <div class="footer-info">
         <div style="text-align:left; float:left;">
-            <div>Semarang, {{ $today }}</div>
+            <div>{{ config('client.city') }}, {{ $today }}</div>
             <div>Petugas PSB</div>
             <div style="margin-top:80px;"><strong>Admin</strong></div>
         </div>

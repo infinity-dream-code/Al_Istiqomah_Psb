@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Informasi Pendaftaran</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
@@ -67,8 +68,8 @@
             <div>
                 <h3 class="text-lg font-semibold mb-2">Ketentuan</h3>
                 <ul class="list-disc ml-6 text-gray-700 space-y-2">
-                    <li>Nomor virtual akun di atas adalah nomor rekening virtual di bank Muamalat Indonesia bagi pendaftar yang digunakan untuk melakukan pembayaran biaya Pendaftaran DEMO PSB.</li>
-                    <li>Nomor virtual account juga digunakan untuk pembayaran sekolah bagi calon mahasiswa yang dinyatakan DITERIMA seleksi masuk di DEMO PSB, maka mohon dicatat dan diingat-ingat nomor tersebut.</li>
+                    <li>Nomor virtual akun di atas adalah nomor rekening virtual di bank Muamalat Indonesia bagi pendaftar yang digunakan untuk melakukan pembayaran biaya Pendaftaran PSB {{ config('client.name') }}.</li>
+                    <li>Nomor virtual account juga digunakan untuk pembayaran sekolah bagi calon mahasiswa yang dinyatakan DITERIMA seleksi masuk di PSB {{ config('client.name') }}, maka mohon dicatat dan diingat-ingat nomor tersebut.</li>
                    <li>
     Petunjuk pembayaran dapat anda lihat di HOME PAGE 
     <a href="{{ url('/') }}" class="text-blue-600 underline" target="_blank">

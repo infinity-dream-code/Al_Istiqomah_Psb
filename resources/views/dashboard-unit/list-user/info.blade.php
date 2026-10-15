@@ -50,9 +50,9 @@
                 Created: {{ $createdAt }}<br>
                 Cetak: {{ $cetak }}
             </div>
-          <div class="logo"><img src="{{ asset('logo.png') }}" alt="Logo PSB Shine Al-Falah"></div>
+          <div class="logo"><img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}"></div>
                 
-            <div class="address">kota semarang</div>
+            <div class="address">{{ config('client.region') }}</div>
             <div class="school-title">PANITIA PENERIMAAN SISWA BARU PSB {{ $peserta->fakultas }}</div>
         </div>
         <div class="content">

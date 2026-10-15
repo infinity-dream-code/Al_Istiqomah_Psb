@@ -81,6 +81,54 @@ class AuthRedirect
     }
 
     /**
+     * Ambil path + query dari URL internal. Null kalau URL ke host lain / tidak valid.
+     */
+    public static function safeRelativeUrl(?string $url): ?string
+    {
+        $url = trim((string) $url);
+        if ($url === '' || str_contains($url, '\\')) {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false) {
+            return null;
+        }
+
+        if (isset($parts['host'])) {
+            $appHost = parse_url(url('/'), PHP_URL_HOST);
+            $reqHost = request()?->getHost();
+            if (!in_array(strtolower($parts['host']), array_filter([strtolower((string) $appHost), strtolower((string) $reqHost)]), true)) {
+                return null;
+            }
+        } elseif (!str_starts_with($url, '/') || str_starts_with($url, '//')) {
+            return null;
+        }
+
+        $path = '/' . ltrim($parts['path'] ?? '/', '/');
+
+        return $path . (isset($parts['query']) && $parts['query'] !== '' ? '?' . $parts['query'] : '');
+    }
+
+    /**
+     * URL login yang membawa halaman asal, supaya setelah login user kembali ke sana
+     * walaupun session (tempat url.intended disimpan) ikut hilang.
+     */
+    public static function loginUrlFor(\Illuminate\Http\Request $request): string
+    {
+        $from = $request->isMethodSafe()
+            ? $request->getPathInfo() . ($request->getQueryString() ? '?' . $request->getQueryString() : '')
+            : url()->previous();
+        $next = self::safeRelativeUrl($from);
+
+        if ($next === null || self::isPublicBouncePath($next)) {
+            return '/ServiceLogin';
+        }
+
+        return '/ServiceLogin?' . http_build_query(['next' => $next]);
+    }
+
+    /**
      * URL yang boleh dibuka user ini setelah login (halaman yang tadi ingin dikunjungi).
      */
     public static function userMayAccessPath($user, ?string $url): bool

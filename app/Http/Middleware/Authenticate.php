@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AuthRedirect;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,6 @@ class Authenticate extends Middleware
             'has_staff_cookie' => $request->cookies->has(RestoreAuthFromCookie::staffCookieName()),
         ]);
 
-        return '/ServiceLogin';
+        return AuthRedirect::loginUrlFor($request);
     }
 }

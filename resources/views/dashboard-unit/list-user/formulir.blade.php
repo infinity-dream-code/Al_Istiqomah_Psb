@@ -281,7 +281,7 @@
     <div class="page">
         <div class="header">
             <div class="form-title">FORMULIR</div>
- <div class="logo"><img src="{{ asset('logo.png') }}" alt="#"></div>
+ <div class="logo"><img src="{{ asset(config('client.logo')) }}" alt="#"></div>
             
             <div class="school-info">
                 <div class="school-title">PENERIMAAN SISWA BARU</div>

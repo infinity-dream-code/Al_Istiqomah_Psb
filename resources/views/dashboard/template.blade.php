@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSB Dashboard</title>
+    <title>PSB {{ config('client.name') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -113,9 +114,7 @@
         <div id="sidebar" class="sidebar w-64 bg-green-600 text-white">
             <div class="p-6 text-center border-b border-green-500">
                 <div class="w-16 h-16 bg-white rounded-full mx-auto mb-3 flex items-center justify-center overflow-hidden">
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-green-600 text-lg"></i>
-                    </div>
+                    <img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}" class="w-14 h-14 object-contain">
                 </div>
                 <h3 class="font-semibold text-lg">Admin</h3>
             </div>
