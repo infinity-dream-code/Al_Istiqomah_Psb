@@ -89,7 +89,7 @@
                             <input type="hidden" name="id_fakultas" value="{{ $peserta->id_fakultas }}">
                         @endif
                     </div>
-                    <div>
+                    <div class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Program Studi</label>
                         <select name="id_prodi" id="id_prodi" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg {{ $disabledClass }}"

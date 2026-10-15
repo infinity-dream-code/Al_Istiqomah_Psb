@@ -140,9 +140,7 @@
                                <a href="{{ url('/PmbMstPendaftarans/master-tahun-akademik') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Tahun Akademik</a>
 <a href="{{ url('/PmbMstPendaftarans/master-gelombang') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Gelombang</a>
 <a href="{{ url('/PmbMstPendaftarans/master-jalur') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Jalur</a>
-<a href="{{ url('/PmbMstPendaftarans/master-unit') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Sekolah</a>
-<a href="{{ url('/PmbMstPendaftarans/master-sekolah') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Jurusan</a>
-<a href="{{ url('/PmbMstPendaftarans/master-ujian') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Ujian</a>
+<a href="{{ url('/PmbMstPendaftarans/master-unit') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Sekolah</a><a href="{{ url('/PmbMstPendaftarans/master-ujian') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Ujian</a>
 <a href="{{ url('/PmbMstPendaftarans/master-ruang') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Ruang</a>
  <a href="{{ url('/PmbMstPendaftarans/master-role') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="masterdata">Role</a>
 
@@ -256,9 +254,7 @@
                                 <a href="{{ route('report.rekapLunasPendaftaran') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Rekap Lunas Registrasi</a>
                                 <a href="{{ route('report.rekapLunasRegistrasi') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Rekap Lunas Registrasi Daftar Ulang</a>
                                 <a href="{{ route('report.siswaProvinsi') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Siswa Per Provinsi</a>
-                                <a href="{{ route('report.siswaKota') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Siswa Per Kota</a>
-                                <a href="{{ route('report.siswaProdi') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Siswa Per Jurusan</a>
-                                <a href="{{ route('report.siswaSekolah') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Siswa Per Sekolah Asal</a>
+                                <a href="{{ route('report.siswaKota') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Siswa Per Kota</a>                                <a href="{{ route('report.siswaSekolah') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Siswa Per Sekolah Asal</a>
                                 <a href="{{ route('report.exportDetailBiaya') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Export Detail Biaya</a>
                                 <a href="{{ route('report.exportAll') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="report">Export All</a>
                             </div>

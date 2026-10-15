@@ -108,10 +108,14 @@ public function create(Request $request)
 
 public function getTemporaryDetail($idJalur, $idFakultas, $idProdi)
 {
-    $temporary = Temporary::where('id_jalur', $idJalur)
+    $prodi = MasterFakultas::whereKey($idFakultas)->exists()
+        ? MasterProdi::resolveFor((int) $idFakultas, $idProdi)
+        : null;
+
+    $temporary = $prodi ? Temporary::where('id_jalur', $idJalur)
         ->where('id_fakultas', $idFakultas)
-        ->where('id_prodi', $idProdi)
-        ->first();
+        ->where('id_prodi', $prodi->id)
+        ->first() : null;
 
     if ($temporary) {
         return response()->json([
@@ -192,15 +196,17 @@ public function update(Request $request, $id)
         'id_jalur' => 'required',
         'id_gelombang' => 'required',
         'id_fakultas' => 'required',
-        'id_prodi' => 'required',
+        'id_prodi' => 'nullable',
         'harga_final' => 'required'
     ]);
+
+    $prodiId = MasterProdi::resolveFor(MasterFakultas::findOrFail($request->id_fakultas)->id, $request->id_prodi)->id;
 
     $exists = MasterHarga::where('id_jalur', $request->id_jalur)
         ->where('id_gelombang', $request->id_gelombang)
         ->where('id_fakultas', $request->id_fakultas)
-        ->where('id_prodi', $request->id_prodi)
-        ->where('id', '!=', $id) 
+        ->where('id_prodi', $prodiId)
+        ->where('id', '!=', $id)
         ->exists();
 
     if ($exists) {
@@ -214,7 +220,7 @@ public function update(Request $request, $id)
     $jalur = MasterJalur::findOrFail($request->id_jalur);
     $gelombang = MasterGelombang::findOrFail($request->id_gelombang);
     $fakultas = MasterFakultas::findOrFail($request->id_fakultas);
-    $prodi = MasterProdi::findOrFail($request->id_prodi);
+    $prodi = MasterProdi::resolveFor($fakultas->id, $request->id_prodi);
 
     $hargaFinal = (int) preg_replace('/[^0-9]/', '', $request->harga_final);
 
@@ -354,14 +360,16 @@ public function update1(Request $request, $role, $id)
         'id_jalur' => 'required',
         'id_gelombang' => 'required',
         'id_fakultas' => 'required',
-        'id_prodi' => 'required',
+        'id_prodi' => 'nullable',
         'harga_final' => 'required'
     ]);
+
+    $prodiId = MasterProdi::resolveFor(MasterFakultas::findOrFail($request->id_fakultas)->id, $request->id_prodi)->id;
 
     $exists = MasterHarga::where('id_jalur', $request->id_jalur)
         ->where('id_gelombang', $request->id_gelombang)
         ->where('id_fakultas', $request->id_fakultas)
-        ->where('id_prodi', $request->id_prodi)
+        ->where('id_prodi', $prodiId)
         ->where('id', '!=', $id)
         ->exists();
 
@@ -376,7 +384,7 @@ public function update1(Request $request, $role, $id)
     $jalur = MasterJalur::findOrFail($request->id_jalur);
     $gelombang = MasterGelombang::findOrFail($request->id_gelombang);
     $fakultas = MasterFakultas::findOrFail($request->id_fakultas);
-    $prodi = MasterProdi::findOrFail($request->id_prodi);
+    $prodi = MasterProdi::resolveFor($fakultas->id, $request->id_prodi);
 
     $hargaFinal = (int) preg_replace('/[^0-9]/', '', $request->harga_final);
 
@@ -495,14 +503,14 @@ public function store(Request $request)
         'id_jalur' => 'required',
         'id_gelombang' => 'required',
         'id_fakultas' => 'required',
-        'id_prodi' => 'required',
+        'id_prodi' => 'nullable',
         'harga_final' => 'required'
     ]);
 
     $jalur = MasterJalur::findOrFail($request->id_jalur);
     $gelombang = MasterGelombang::findOrFail($request->id_gelombang);
     $fakultas = MasterFakultas::findOrFail($request->id_fakultas);
-    $prodi = MasterProdi::findOrFail($request->id_prodi);
+    $prodi = MasterProdi::resolveFor($fakultas->id, $request->id_prodi);
 
     $hargaFinal = preg_replace('/[^0-9]/', '', $request->harga_final);
 

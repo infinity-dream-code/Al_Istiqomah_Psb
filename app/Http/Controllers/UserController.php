@@ -52,11 +52,20 @@ public function store(Request $request)
         'username' => 'required|string|max:50|unique:user,username',
         'password' => 'required|string|min:4',
         'role_id' => 'required|exists:master_role,id',
-        'prodi_id' => 'required|array|min:1',
+        'fakultas_id' => 'required',
+        'prodi_id' => 'nullable|array',
         'prodi_id.*' => 'exists:master_prodi,id'
     ]);
 
     $role = MasterRole::find($request->role_id);
+    $fakultas = MasterFakultas::findOrFail($request->fakultas_id);
+
+    // Jurusan tidak dipilih di form: user unit mendapat akses ke seluruh jurusan di sekolahnya.
+    $prodiIds = $request->prodi_id;
+    if (empty($prodiIds)) {
+        MasterProdi::defaultFor($fakultas->id);
+        $prodiIds = MasterProdi::where('id_fakultas', $fakultas->id)->pluck('id')->all();
+    }
 
     User::create([
         'nama' => $request->nama,
@@ -64,7 +73,7 @@ public function store(Request $request)
         'password' => bcrypt($request->password),
         'plain_password' => $request->password,
         'role' => $role->nama_role,
-        'prodi_id' => implode(',', $request->prodi_id)
+        'prodi_id' => implode(',', $prodiIds)
     ]);
 
     return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan');
@@ -118,10 +127,19 @@ public function updatepeserta(Request $request, $id)
         'id_gelombang' => 'required',
         'id_jalur'     => 'required',
         'id_fakultas'  => 'required',
-        'id_prodi'     => 'required',
+        'id_prodi'     => 'nullable',
     ];
 
     $request->validate($rules);
+
+    if (!$request->filled('id_prodi')) {
+        $request->merge(['id_prodi' => MasterHarga::where('id_jalur', $request->id_jalur)
+            ->where('id_gelombang', $request->id_gelombang)
+            ->where('id_fakultas', $request->id_fakultas)
+            ->orderByDesc('active')
+            ->orderBy('id')
+            ->value('id_prodi') ?? $peserta->id_prodi]);
+    }
 
     $peserta->nama_peserta = $request->nama_peserta;
     $peserta->no_hp = $request->no_hp;
@@ -324,10 +342,19 @@ public function updatepeserta1(Request $request, $role, $id)
         'id_gelombang' => 'required',
         'id_jalur'     => 'required',
         'id_fakultas'  => 'required',
-        'id_prodi'     => 'required',
+        'id_prodi'     => 'nullable',
     ];
 
     $request->validate($rules);
+
+    if (!$request->filled('id_prodi')) {
+        $request->merge(['id_prodi' => MasterHarga::where('id_jalur', $request->id_jalur)
+            ->where('id_gelombang', $request->id_gelombang)
+            ->where('id_fakultas', $request->id_fakultas)
+            ->orderByDesc('active')
+            ->orderBy('id')
+            ->value('id_prodi') ?? $peserta->id_prodi]);
+    }
 
     $peserta->nama_peserta = $request->nama_peserta;
     $peserta->no_hp = $request->no_hp;

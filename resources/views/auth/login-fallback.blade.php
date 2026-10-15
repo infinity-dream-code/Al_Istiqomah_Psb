@@ -20,8 +20,15 @@
         @csrf
         <input type="hidden" name="next" value="{{ $next ?? '' }}">
         <h1>PSB {{ config('client.name') }}</h1>
+        @php $loginError = session('login_error') ?: $errors->first(); @endphp
+        @if ($loginError)
+            <p style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:10px 12px;border-radius:8px;font-size:14px;margin:0 0 14px;">{{ $loginError }}</p>
+        @endif
+        @if (session('success'))
+            <p style="background:#f0fdf4;border:1px solid #86efac;color:#15803d;padding:10px 12px;border-radius:8px;font-size:14px;margin:0 0 14px;">{{ session('success') }}</p>
+        @endif
         <label>Username</label>
-        <input type="text" name="username" required autocomplete="username">
+        <input type="text" name="username" value="{{ old('username') }}" required autocomplete="username">
         <label>Password</label>
         <input type="password" name="password" required autocomplete="current-password">
         <button type="submit">Log In</button>

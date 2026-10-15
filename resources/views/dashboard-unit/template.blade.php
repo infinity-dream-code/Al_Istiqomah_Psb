@@ -153,21 +153,6 @@
                     </li>
                     @endif
 
-                    @if(in_array('master data', $menus ?? []))
-                    <li>
-                        <button class="menu-item w-full flex items-center justify-between px-6 py-3 text-white font-medium dropdown-toggle hover:bg-green-700 transition-colors" data-target="masterdata-dropdown" data-menu="masterdata">
-                            <div class="flex items-center">
-                                <i class="fas fa-database mr-3 w-4 text-center"></i>
-                                <span class="text-sm font-semibold">MASTER DATA</span>
-                            </div>
-                            <i class="fas fa-chevron-down text-xs transition-transform dropdown-arrow"></i>
-                        </button>
-                        <div id="masterdata-dropdown" class="dropdown-content bg-green-700">
-                           <a href="{{ url('PmbMstPendaftarans/master-sekolah/' . str_replace(' ', '-', $role ?? 'admin')) }}" class="submenu-item block px-12 py-2 hover:bg-green-800" data-submenu="master-sekolah">Jurusan</a>
-                        </div>
-                    </li>
-                    @endif
-
                     @if(in_array('setting psb', $menus ?? []))
                     <li>
                         <button class="menu-item w-full flex items-center justify-between px-6 py-3 text-white font-medium dropdown-toggle hover:bg-green-700 transition-colors" data-target="setting-dropdown" data-menu="setting">
@@ -286,12 +271,6 @@
        class="submenu-item block px-12 py-2 hover:bg-green-800"
        data-submenu="siswa-per-kota">
        Siswa Per Kota
-    </a>
-
-    <a href="{{ url('PmbMstPendaftarans/siswa-per-prodi/' . str_replace(' ', '-', ($role ?? 'admin'))) }}"
-       class="submenu-item block px-12 py-2 hover:bg-green-800"
-       data-submenu="siswa-per-prodi">
-       Siswa Per Jurusan
     </a>
 
     <a href="{{ url('PmbMstPendaftarans/siswa-per-sekolah/' . str_replace(' ', '-', ($role ?? 'admin'))) }}"

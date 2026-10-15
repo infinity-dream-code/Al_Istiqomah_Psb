@@ -75,10 +75,34 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'username' => ['required'],
-            'password' => ['required'],
+            'username' => ['required', 'string', 'max:100'],
+            'password' => ['required', 'string', 'max:100'],
+        ], [
+            'username.required' => 'Username wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
+            '*.string' => 'Username atau password salah.',
+            '*.max' => 'Username atau password salah.',
         ]);
 
+        // Pesan error mentah (SQL, nama tabel/kolom) tidak boleh sampai ke user; detailnya cukup di log.
+        try {
+            return $this->attemptLogin($request, $credentials);
+        } catch (\Throwable $e) {
+            report($e);
+            Log::error('login.exception', [
+                'username' => $credentials['username'],
+                'ip' => $request->ip(),
+                'class' => get_class($e),
+            ]);
+
+            return back()
+                ->withInput($request->only('username'))
+                ->with('login_error', 'Login sedang mengalami gangguan. Silakan coba beberapa saat lagi.');
+        }
+    }
+
+    private function attemptLogin(Request $request, array $credentials)
+    {
         $user = User::where('username', $credentials['username'])
             ->where('plain_password', $credentials['password'])
             ->first();
@@ -89,7 +113,9 @@ class LoginController extends Controller
                 'ip' => $request->ip(),
             ]);
 
-            return back()->with('login_error', 'Username atau password salah.');
+            return back()
+                ->withInput($request->only('username'))
+                ->with('login_error', 'Username atau password salah.');
         }
 
         $redirectTo = $this->resolveRedirectPath($user);
@@ -99,7 +125,9 @@ class LoginController extends Controller
                 'role' => $user->role,
             ]);
 
-            return back()->with('login_error', 'Role tidak dikenali.');
+            return back()
+                ->withInput($request->only('username'))
+                ->with('login_error', 'Akun Anda belum dapat digunakan. Silakan hubungi admin.');
         }
 
         if ($user->role === 'peserta') {

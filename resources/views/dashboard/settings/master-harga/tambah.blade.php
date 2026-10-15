@@ -40,12 +40,6 @@
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label for="id_prodi" class="block text-sm font-medium text-gray-700 mb-2">Jurusan<span class="text-red-500">*</span></label>
-                        <select id="id_prodi" name="id_prodi" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                            <option value="">-- Pilih Jurusan --</option>
-                        </select>
-                    </div>
                 </div>
                 <div>
                     <label for="harga_final" class="block text-sm font-medium text-gray-700 mb-2">Biaya Registrasi <span class="text-red-500">*</span></label>
@@ -84,25 +78,11 @@ $(function() {
         $(this).val(formatNumber($(this).val()));
     });
 
-    $('#id_fakultas').on('change', function() {
-        let fakultasId = $(this).val();
-        let prodiSelect = $('#id_prodi');
-        prodiSelect.empty().append('<option value="">-- Pilih Jurusan --</option>');
-        if(fakultasId) {
-           $.get(window.location.origin + "/get-prodi-by-fakultas/" + fakultasId, function(data) {
-                $.each(data, function(key, value) {
-                    prodiSelect.append('<option value="'+ value.id +'">'+ value.nama +'</option>');
-                });
-            });
-        }
-    });
-
-    $('#id_prodi').on('change', function() {
+    $('#id_jalur, #id_fakultas').on('change', function() {
         let jalurId = $('#id_jalur').val();
         let fakultasId = $('#id_fakultas').val();
-        let prodiId = $(this).val();
-        if (jalurId && fakultasId && prodiId) {
-            $.get("{{ url('get-temporary-detail') }}/" + jalurId + "/" + fakultasId + "/" + prodiId, function(data) {
+        if (jalurId && fakultasId) {
+            $.get("{{ url('get-temporary-detail') }}/" + jalurId + "/" + fakultasId + "/0", function(data) {
                 let container = $('#detail-container');
                 container.empty();
                 if (data.biaya_pendaftaran) {

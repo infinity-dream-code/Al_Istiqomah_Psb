@@ -109,12 +109,13 @@
     <div class="w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white right-panel">
       <div class="max-w-md mx-auto w-full animate-slideInRight">
 
-        @if (session('login_error'))
+        @php $loginError = session('login_error') ?: $errors->first(); @endphp
+        @if ($loginError)
           <div class="flex items-center gap-3 bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>
-            <span class="text-sm font-medium">{{ session('login_error') }}</span>
+            <span class="text-sm font-medium">{{ $loginError }}</span>
           </div>
         @endif
 
@@ -151,6 +152,7 @@
             <input
               type="text"
               name="username"
+              value="{{ old('username') }}"
               required
               class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-600 input-focus input-field">
           </div>

@@ -13,6 +13,26 @@ class MasterProdi extends Model
 
     protected $fillable = ['id_fakultas','nama'];
 
+    // Jurusan disembunyikan dari UI, tapi master_harga & data_peserta tetap butuh id_prodi.
+    public const DEFAULT_NAMA = '-';
+
+    public static function defaultFor(int $idFakultas): self
+    {
+        return static::firstOrCreate(['id_fakultas' => $idFakultas, 'nama' => self::DEFAULT_NAMA]);
+    }
+
+    public static function resolveFor(int $idFakultas, $idProdi = null): self
+    {
+        if ($idProdi) {
+            $prodi = static::where('id', $idProdi)->where('id_fakultas', $idFakultas)->first();
+            if ($prodi) {
+                return $prodi;
+            }
+        }
+
+        return static::defaultFor($idFakultas);
+    }
+
      public function targets()
     {
         return $this->hasMany(Target::class, 'id_prodi');
