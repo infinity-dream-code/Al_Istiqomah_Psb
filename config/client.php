@@ -10,4 +10,7 @@ return [
     'city' => env('CLIENT_CITY', 'Kuningan'),
     'region' => env('CLIENT_REGION', 'Kab. Kuningan, Prov. Jawa Barat'),
     'logo' => env('CLIENT_LOGO', 'istiqomah.png'),
+
+    // Nomor VA = prefix + nomor pendaftaran (10 digit) = 16 digit.
+    'va_prefix' => env('CLIENT_VA_PREFIX', '797777'),
 ];

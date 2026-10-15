@@ -27,7 +27,7 @@
 
             <div>
                 <p class="text-gray-600 font-semibold">No. Virtual Akun</p>
-                <p class="text-lg font-bold">751000{{ $peserta->no_pendaftaran }}</p>
+                <p class="text-lg font-bold">{{ $peserta->va_number ?: config('client.va_prefix') . $peserta->no_pendaftaran }}</p>
             </div>
 
             <div>
@@ -109,7 +109,7 @@
 
                 <p class="text-gray-700 mt-4">
                     Untuk transaksi antar bank (teller, ATM, ibanking, dll) bank biasanya membutuhkan kode bank tujuan (bank Muamalat), sehingga cara penulisan nomor rekening adalah kode bank diikuti nomor virtual akun.<br>
-                    <span class="font-semibold">Sebagai berikut : 751000{{ $peserta->no_pendaftaran }}</span>
+                    <span class="font-semibold">Sebagai berikut : {{ $peserta->va_number ?: config('client.va_prefix') . $peserta->no_pendaftaran }}</span>
                 </p>
             </div>
         </div>

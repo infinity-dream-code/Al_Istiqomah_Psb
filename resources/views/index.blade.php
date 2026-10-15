@@ -488,7 +488,7 @@
     <ol class="ps-3">
         <li class="mb-2">Masukkan PIN</li>
         <li class="mb-2">Pilih menu "PEMBAYARAN" lalu pilih menu "VIRTUAL ACCOUNT".</li>
-        <li class="mb-2">Masukkan "Nomor Pendaftaran / Virtual Akun (VA)" contoh: 7977xx12345678901</li>
+        <li class="mb-2">Masukkan "Nomor Pendaftaran / Virtual Akun (VA)" contoh: {{ config('client.va_prefix') }}1234567890</li>
         <li class="mb-2">Periksa Informasi pembayaran pastikan VA sudah sesuai dengan informasi (cek info nama dan nama tagihan)</li>
         <li class="mb-2">Tekan "YA" jika setuju dengan informasi pembayaran.</li>
         <li class="mb-2">Masukkan nominal pembayaran sesuai dengan total bayar yang tertera.</li>
@@ -502,7 +502,7 @@
         <li class="mb-2">Masukkan PIN</li>
         <li class="mb-2">Pilih menu "Transaksi Lainnya " lalu pilih "TRANSFER"</li>
         <li class="mb-2">Pilih Menu "KE REK BANK LAIN / ANTAR BANK ONLINE"</li>
-        <li class="mb-2">Masukkan Kode Bank Muamalat (147) dilanjut dengan 16 digit nomor Virtual Account (VA) contoh: 7977xx12345678901</li>
+        <li class="mb-2">Masukkan Kode Bank Muamalat (147) dilanjut dengan 16 digit nomor Virtual Account (VA) contoh: {{ config('client.va_prefix') }}1234567890</li>
         <li class="mb-2">Masukkan nominal pembayaran sesuai dengan total bayar yang tertera.</li>
         <li class="mb-2">Periksa Informasi pembayaran pastikan VA sudah sesuai dengan informasi (cek info nama dan nama tagihan)</li>
         <li class="mb-2">Jika data sudah benar maka lakukan konfirmasi pada data transfer.</li>
@@ -514,7 +514,7 @@
         <li class="mb-2">Login ke Mobile Banking Muamalat (Muamalat DIN).</li>
         <li class="mb-2">Pilih menu "BELI atau BAYAR".</li>
         <li class="mb-2">Pilih menu "VIRTUAL ACCOUNT".</li>
-        <li class="mb-2">Masukkan nomor "Virtual Account" contoh: 7977xx12345678901.</li>
+        <li class="mb-2">Masukkan nomor "Virtual Account" contoh: {{ config('client.va_prefix') }}1234567890.</li>
         <li class="mb-2">Periksa Informasi pembayaran pastikan VA sudah sesuai dengan informasi (cek info nama dan nama tagihan).</li>
         <li class="mb-2">Masukkan nominal pembayaran sesuai dengan total bayar yang tertera.</li>
         <li class="mb-2">Masukkan TIN mobile banking anda.</li>
@@ -527,7 +527,7 @@
         <li class="mb-2">Pilih Menu "Transfer"</li>
         <li class="mb-2">Pilih Menu "Ke Rek Bank Lain / Realtime Transfer"</li>
         <li class="mb-2">Pilih “Seluruh Channel Bank” sebagai rekening tujuan</li>
-        <li class="mb-2">Masukkan Nomor Pendaftaran / Virtual Account. contoh: 75100012345678901</li>
+        <li class="mb-2">Masukkan Nomor Pendaftaran / Virtual Account. contoh: {{ config('client.va_prefix') }}1234567890</li>
         <li class="mb-2">Masukkan jumlah sesuai tagihan.</li>
         <li class="mb-2">Simpan bukti struk sebagai bukti pembayaran yang sah.</li>
     </ol>

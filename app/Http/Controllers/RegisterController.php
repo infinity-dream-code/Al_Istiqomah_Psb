@@ -69,7 +69,7 @@ class RegisterController extends Controller
         'role'           => 'peserta',
     ]);
 
-    $vaNumber = '751000' . $noDaftar;
+    $vaNumber = config('client.va_prefix') . $noDaftar;
 
     $gelombang = MasterGelombang::find($request->id_gelombang);
     $jalur     = MasterJalur::find($request->id_jalur);
