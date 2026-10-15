@@ -92,7 +92,6 @@
                         @php
                             $uploadWajib = [
                                 'foto' => 'Photo',
-                                'dokumen_ktp_ortu' => 'KTP',
                                 'dokumen_kk' => 'KK',
                                 'dokumen_akte_kelahiran' => 'Akte',
                             ];

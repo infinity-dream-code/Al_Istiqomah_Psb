@@ -150,7 +150,7 @@
                         <h3 class="text-lg font-semibold">Pilihan</h3>
                     </div>
                     <div class="p-6">
-                        <h4 class="blue-title mb-6">Jalur & Sekolah & Jurusan</h4>
+                        <h4 class="blue-title mb-6">Jalur & Sekolah</h4>
                         
                         <div class="space-y-6">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -176,12 +176,6 @@
             <label class="block label-text mb-2">Sekolah <span class="required">*</span></label>
             <select name="id_fakultas" id="fakultas" required class="form-input" disabled>
                 <option value="">PILIH SEKOLAH</option>
-            </select>
-        </div>
-                               <div>
-            <label class="block label-text mb-2">Jurusan <span class="required">*</span></label>
-            <select name="id_prodi" id="prodi" required class="form-input" disabled>
-                <option value="">PILIH JURUSAN</option>
             </select>
         </div>
                             </div>
@@ -222,13 +216,6 @@
                                     <label class="block label-text mb-2">Tanggal Lahir <span class="required">*</span></label>
                                     <input type="date" name="tanggal_lahir" required class="form-input">
                                 </div>
-                                <div>
-                                    <label class="block label-text mb-2">NISN <span class="required">*</span></label>
-                                    <div class="flex gap-3">
-                                        <input type="text" name="nisn" required placeholder="Nomor Induk Siswa Nasional" class="form-input">
-                                        <button type="button" onclick="window.open('https://nisn.data.kemdikbud.go.id/index.php/Cindex/formcaribynama', '_blank')" class="btn-secondary whitespace-nowrap">Cek NISN</button>
-                                    </div>
-                                </div>
                             </div>
 
                             <div>
@@ -263,34 +250,10 @@
 
                             <h4 class="blue-title mb-6 mt-8">Pendidikan Sebelumnya</h4>
 
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block label-text mb-2">Provinsi Sekolah <span class="required">*</span></label>
-                                    <select id="provinsiSekolah" name="provinsi_sekolah_id" required class="form-input">
-                                        <option value="">Pilih provinsi</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block label-text mb-2">Kota Sekolah <span class="required">*</span></label>
-                                    <select id="kotaSekolah" name="kota_sekolah_id" required disabled class="form-input">
-                                        <option value="">Pilih kota/kabupaten</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block label-text mb-2">Nama Sekolah Asal<span class="required">*</span></label>
-                                    <input type="text" name="asal_sekolah" required placeholder="Contoh: SMA Negeri 1 Jakarta" class="form-input">
-                                </div>
-                                <div>
-                                    <label class="block label-text mb-2">Jurusan Sekolah Asal<span class=""></span></label>
-                                    <select name="jurusan_sekolah" class="form-input">
-                                        <option value="">Pilih Jurusan</option>
-                                        @foreach($jurusans as $j)
-                                            <option value="{{ $j->id }}">{{ strtoupper($j->nama) }}</option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" name="asal_sekolah" required placeholder="Contoh: SD Negeri 1 Kuningan" class="form-input">
                                 </div>
                                 <div>
                                     <label class="block label-text mb-2">Tahun Lulus <span class="required">*</span></label>
@@ -489,20 +452,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     const kabupaten = document.getElementById('kabupaten');
     const kecamatan = document.getElementById('kecamatan');
 
-    const provinsiSekolah = document.getElementById('provinsiSekolah');
-    const kotaSekolah = document.getElementById('kotaSekolah');
-
     const jalurSelect = document.getElementById('jalur');
     const gelombangSelect = document.getElementById('gelombang');
     const fakultasSelect = document.getElementById('fakultas');
-    const prodiSelect = document.getElementById('prodi');
 
     if (jalurSelect && gelombangSelect) {
         jalurSelect.addEventListener('change', function () {
             const jalurId = this.value;
             resetSelect(gelombangSelect, 'PILIH GELOMBANG');
             resetSelect(fakultasSelect, 'PILIH SEKOLAH');
-            resetSelect(prodiSelect, 'PILIH JURUSAN');
             if (jalurId) {
                 fetch("{{ url('get-gelombang-by-jalur') }}/" + jalurId)
                 .then(res => res.json())
@@ -518,28 +476,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             const jalurId = jalurSelect.value;
             const gelombangId = this.value;
             resetSelect(fakultasSelect, 'PILIH SEKOLAH');
-            resetSelect(prodiSelect, 'PILIH JURUSAN');
             if (jalurId && gelombangId) {
                 fetch("{{ url('get-fakultas-by-jalur-gelombang') }}/" + jalurId + "/" + gelombangId)
                 .then(res => res.json())
                 .then(data => {
                     fillSelect(fakultasSelect, data, 'PILIH SEKOLAH', 'id_fakultas', 'nama_fakultas');
-                });
-            }
-        });
-    }
-
-    if (fakultasSelect && prodiSelect) {
-        fakultasSelect.addEventListener('change', function () {
-            const jalurId = jalurSelect.value;
-            const gelombangId = gelombangSelect.value;
-            const fakultasId = this.value;
-            resetSelect(prodiSelect, 'PILIH JURUSAN');
-            if (jalurId && gelombangId && fakultasId) {
-                fetch("{{ url('get-prodi-by-jalur-gelombang-fakultas') }}/" + jalurId + "/" + gelombangId + "/" + fakultasId)
-                .then(res => res.json())
-                .then(data => {
-                    fillSelect(prodiSelect, data, 'PILIH JURUSAN', 'id_prodi', 'nama_prodi');
                 });
             }
         });
@@ -585,29 +526,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    if (provinsiSekolah) {
-        try {
-            const provinces = await fetchJson(`{{ route('api.provinsi') }}`);
-            fillSelect(provinsiSekolah, provinces, 'Pilih provinsi');
-            resetSelect(kotaSekolah, 'Pilih kota/kabupaten');
-        } catch (error) {
-            resetSelect(provinsiSekolah, 'Gagal memuat provinsi');
-            resetSelect(kotaSekolah, 'Pilih kota/kabupaten');
-        }
-        provinsiSekolah.addEventListener('change', async function(event) {
-            const provinsiId = event.target.value;
-            resetSelect(kotaSekolah, 'Pilih kota/kabupaten');
-            if (!provinsiId) return;
-            const url = `{{ route('api.kabupaten', ['provinsi' => '__ID__']) }}`.replace('__ID__', provinsiId);
-            try {
-                const kabupatens = await fetchJson(url);
-                fillSelect(kotaSekolah, kabupatens, 'Pilih kota/kabupaten');
-            } catch (error) {
-                resetSelect(kotaSekolah, 'Gagal memuat kabupaten');
-            }
-        });
-    }
-
     if (form) {
         form.addEventListener('submit', function(event) {
             const userAnswer = parseInt(captchaInput ? captchaInput.value : '');
@@ -647,7 +565,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 document.querySelector('[name="tlp_ibu"]'),
                 document.querySelector('[name="tlp_ayah"]')
             ];
-            const nisnField = document.querySelector('[name="nisn"]');
             if (emailField && emailField.value) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(emailField.value)) {
@@ -669,15 +586,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 }
             });
-            if (nisnField && nisnField.value) {
-                const nisnRegex = /^[0-9]{10}$/;
-                if (!nisnRegex.test(nisnField.value)) {
-                    event.preventDefault();
-                    showNotification('NISN harus berisi 10 digit angka!', 'error');
-                    nisnField.focus();
-                    return false;
-                }
-            }
             showNotification('Form sedang diproses...', 'success');
         });
     }
@@ -712,13 +620,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
     });
-
-    const nisnInput = document.querySelector('input[name="nisn"]');
-    if (nisnInput) {
-        nisnInput.addEventListener('input', function(event) {
-            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);
-        });
-    }
 
     const tahunLulusInput = document.querySelector('input[name="tahun_lulus"]');
     if (tahunLulusInput) {

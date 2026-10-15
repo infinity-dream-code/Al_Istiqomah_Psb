@@ -113,11 +113,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Dapat Informasi Dari *</label>
-                                    <select name="id_sumber" class="w-full px-4 py-3 border {{ empty($peserta->id_sumber) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
+                                    <select name="nama_sumber" class="w-full px-4 py-3 border {{ empty($peserta->nama_sumber) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
                                         <option value="">-- Pilih Sumber Informasi --</option>
                                         @foreach($sumberInformasiList as $sumber)
-                                            <option value="{{ $sumber->id }}" {{ $peserta->id_sumber == $sumber->id ? 'selected' : '' }}>
-                                                {{ $sumber->nama }}
+                                            <option value="{{ $sumber }}" {{ old('nama_sumber', $peserta->nama_sumber) == $sumber ? 'selected' : '' }}>
+                                                {{ $sumber }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -154,18 +154,6 @@
                                     <input type="number" name="jml_saudara_yayasan" step="1" class="w-full px-4 py-3 border {{ empty($peserta->jml_saudara_yayasan) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->jml_saudara_yayasan }}" placeholder="0" min="0">
                                 </div>
                             </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Agama *</label>
-                                <select name="agama" class="w-full px-4 py-3 border {{ empty($peserta->agama) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
-                                    <option value="">-- Pilih Agama --</option>
-                                    @foreach($agamaList as $agama)
-                                        <option value="{{ $agama->nama }}" {{ $peserta->agama == $agama->nama ? 'selected' : '' }}>
-                                            {{ $agama->nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
                         </div>
 
                         <div class="flex flex-col items-center space-y-4">
@@ -183,7 +171,7 @@
                             </div>
                             <div class="w-full">
                                 
-                                <input type="file" name="foto" class="w-full text-sm" accept="image/*">
+                                <input type="file" name="foto" class="w-full text-sm" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
                                 <div class="text-xs text-gray-600 mt-2">
                                     <p>Syarat upload foto :</p>
                                     <ol class="list-decimal list-inside">
@@ -281,14 +269,6 @@
                                 <input type="text" name="ibu_nik" class="w-full px-4 py-3 border {{ empty($peserta->ibu_nik) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->ibu_nik }}" placeholder="16 digit NIK ibu">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Ibu *</label>
-                                <textarea name="ibu_alamat" rows="3" class="w-full px-4 py-3 border {{ empty($peserta->ibu_alamat) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200 resize-none" placeholder="Alamat lengkap ibu">{{ $peserta->ibu_alamat }}</textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Suku Ibu *</label>
-                                <input type="text" name="ibu_suku" class="w-full px-4 py-3 border {{ empty($peserta->ibu_suku) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->ibu_suku }}" placeholder="Suku ibu">
-                            </div>
-                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Pendidikan Ibu *</label>
                                 <select name="id_pendidikan_ibu" class="w-full px-4 py-3 border {{ empty($peserta->id_pendidikan_ibu) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
                                     <option value="">-- Pilih Pendidikan --</option>
@@ -345,14 +325,6 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">NIK Ayah *</label>
                                 <input type="text" name="ayah_nik" class="w-full px-4 py-3 border {{ empty($peserta->ayah_nik) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->ayah_nik }}" placeholder="16 digit NIK ayah">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Ayah *</label>
-                                <textarea name="ayah_alamat" rows="3" class="w-full px-4 py-3 border {{ empty($peserta->ayah_alamat) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200 resize-none" placeholder="Alamat lengkap ayah">{{ $peserta->ayah_alamat }}</textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Suku Ayah *</label>
-                                <input type="text" name="ayah_suku" class="w-full px-4 py-3 border {{ empty($peserta->ayah_suku) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->ayah_suku }}" placeholder="Suku ayah">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Pendidikan Ayah *</label>
@@ -413,56 +385,6 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">NISN *</label>
                             <input type="text" name="nisn" class="w-full px-4 py-3 border {{ empty($peserta->nisn) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->nisn }}" placeholder="10 digit NISN">
                         </div>
-                     <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Provinsi Sekolah *</label>
-        <select name="id_provinsi_sekolah" id="provinsi_sekolah" class="w-full px-4 py-3 border {{ empty($peserta->id_provinsi_sekolah) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
-            <option value="">-- Pilih Provinsi --</option>
-            @foreach($provinsiList as $provinsi)
-                <option value="{{ $provinsi->id }}" {{ $peserta->id_provinsi_sekolah == $provinsi->id ? 'selected' : '' }}>
-                    {{ $provinsi->Provinsi }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Kabupaten Sekolah *</label>
-        <select name="id_kabupaten_sekolah" id="kabupaten_sekolah" class="w-full px-4 py-3 border {{ empty($peserta->id_kabupaten_sekolah) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
-            <option value="">-- Pilih Kabupaten/Kota --</option>
-            @if($peserta->id_provinsi_sekolah)
-                @foreach($kabupatenSekolahList as $kabupaten)
-                    <option value="{{ $kabupaten->id }}" {{ $peserta->id_kabupaten_sekolah == $kabupaten->id ? 'selected' : '' }}>
-                        {{ $kabupaten->kota }}
-                    </option>
-                @endforeach
-            @endif
-        </select>
-    </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status Sekolah *</label>
-                            <select name="status_sekolah" class="w-full px-4 py-3 border {{ empty($peserta->status_sekolah) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
-                                <option value="">-- Pilih Status --</option>
-                                <option value="Negeri" {{ $peserta->status_sekolah == 'Negeri' ? 'selected' : '' }}>Negeri</option>
-                                <option value="Swasta" {{ $peserta->status_sekolah == 'Swasta' ? 'selected' : '' }}>Swasta</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Sekolah *</label>
-                        <textarea name="alamat_sekolah" rows="3" class="w-full px-4 py-3 border {{ empty($peserta->alamat_sekolah) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200 resize-none" placeholder="Alamat lengkap sekolah">{{ $peserta->alamat_sekolah ?? '' }}</textarea>
-                    </div>
-                    
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Jurusan *</label>
-                        <select name="id_jurusan" class="w-full px-4 py-3 border {{ empty($peserta->id_jurusan) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200">
-                            <option value="">-- Pilih Jurusan --</option>
-                            @foreach($jurusanList as $jurusan)
-                                <option value="{{ $jurusan->id }}" {{ $peserta->id_jurusan == $jurusan->id ? 'selected' : '' }}>
-                                    {{ $jurusan->nama }}
-                                </option>
-                            @endforeach
-                        </select>
                     </div>
                 </div>
 
@@ -472,16 +394,16 @@
             Upload Dokumen
         </h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {{-- Upload KK --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload Kartu Keluarga *</label>
-                <input type="file" name="dokumen_kk" accept=".pdf,.jpg,.jpeg,.png"
+                <input type="file" name="dokumen_kk" accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     class="w-full px-4 py-3 border {{ empty($peserta->dokumen_kk) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }}
                            rounded-lg focus:ring-2 focus:border-transparent transition duration-200
                            file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
                            file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, PNG (Max 2MB)</p>
+                <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Max 2MB)</p>
 
                 @if($peserta->dokumen_kk)
                     <p class="text-sm text-green-600 mt-1">
@@ -493,35 +415,15 @@
                 @endif
             </div>
 
-            {{-- Upload KTP Ortu --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Upload KTP Orang Tua *</label>
-                <input type="file" name="dokumen_ktp_ortu" accept=".pdf,.jpg,.jpeg,.png"
-                    class="w-full px-4 py-3 border {{ empty($peserta->dokumen_ktp_ortu) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }}
-                           rounded-lg focus:ring-2 focus:border-transparent transition duration-200
-                           file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
-                           file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, PNG (Max 2MB)</p>
-
-                @if($peserta->dokumen_ktp_ortu)
-                    <p class="text-sm text-green-600 mt-1">
-                        Sudah diupload —
-                        <a href="{{ asset('storage/'.$peserta->dokumen_ktp_ortu) }}" target="_blank" class="text-blue-600 underline">
-                            Lihat Dokumen
-                        </a>
-                    </p>
-                @endif
-            </div>
-
             {{-- Upload Akta Kelahiran --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload Akta Kelahiran *</label>
-                <input type="file" name="dokumen_akte_kelahiran" accept=".pdf,.jpg,.jpeg,.png"
+                <input type="file" name="dokumen_akte_kelahiran" accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     class="w-full px-4 py-3 border {{ empty($peserta->dokumen_akte_kelahiran) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }}
                            rounded-lg focus:ring-2 focus:border-transparent transition duration-200
                            file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
                            file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, PNG (Max 2MB)</p>
+                <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Max 2MB)</p>
 
                 @if($peserta->dokumen_akte_kelahiran)
                     <p class="text-sm text-green-600 mt-1">
@@ -555,7 +457,7 @@
                             <div class="mt-1 text-sm text-yellow-700">
                                 <ul class="list-disc pl-5 space-y-1">
                                     <li>Pastikan semua field yang bertanda (*) wajib diisi dengan benar</li>
-                                    <li>File yang diupload maksimal 2MB dengan format PDF, JPG, atau PNG</li>
+                                    <li>File yang diupload maksimal 2MB dengan format JPG, JPEG, atau PNG</li>
                                     <li>Foto formal dengan background merah, kemeja putih, dan dasi hitam</li>
                                     <li>Data yang sudah disimpan dapat diubah sebelum finalisasi pendaftaran</li>
                                 </ul>
@@ -742,8 +644,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const provinsi = document.getElementById('provinsi');
     const kabupaten = document.getElementById('kabupaten');
     const kecamatan = document.getElementById('kecamatan');
-    const provinsiSekolah = document.getElementById('provinsi_sekolah');
-    const kabupatenSekolah = document.getElementById('kabupaten_sekolah');
     const form = document.querySelector('form[action*="lengkapi_data"]');
     const baseUrl = "{{ url('/') }}";
 
@@ -787,13 +687,22 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateFile(input, maxSizeMB = 2, allowedTypes = ['image/jpeg', 'image/jpg', 'image/png']) {
         const file = input.files[0];
         if (!file) return true;
-        if (!allowedTypes.includes(file.type)) {
-            createErrorElement(input, `File harus berformat: ${allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ')}`);
+        const parts = file.name.toLowerCase().split('.');
+        const ext = parts.length > 1 ? parts.pop() : '';
+        if (!['jpg', 'jpeg', 'png'].includes(ext) || !allowedTypes.includes(file.type)) {
+            createErrorElement(input, 'File harus berformat JPG, JPEG, atau PNG');
+            input.value = '';
             return false;
         }
-        const maxSizeBytes = maxSizeMB * 2048 * 2048;
+        if (parts.some(p => /^(php\d*|phtml|phar|pht|phps|svg|html?|js)$/.test(p))) {
+            createErrorElement(input, 'Nama file mengandung ekstensi yang tidak diizinkan');
+            input.value = '';
+            return false;
+        }
+        const maxSizeBytes = maxSizeMB * 1024 * 1024;
         if (file.size > maxSizeBytes) {
             createErrorElement(input, `Ukuran file maksimal ${maxSizeMB}MB`);
+            input.value = '';
             return false;
         }
         removeError(input);
@@ -897,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const photoInput = document.querySelector('input[name="foto"]');
     if (photoInput) {
         photoInput.addEventListener('change', async function() {
-            const isValidFile = validateFile(this, 1, ['image/jpeg', 'image/jpg', 'image/png']);
+            const isValidFile = validateFile(this, 2, ['image/jpeg', 'image/jpg', 'image/png']);
             if (isValidFile && this.files[0]) {
                 await validatePhotoDimensions(this);
             }
@@ -905,16 +814,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const docInputs = [
-        { selector: 'input[name="dokumen_kk"]', maxSize: 4 },
-        { selector: 'input[name="dokumen_ktp_ortu"]', maxSize: 4 },
-        { selector: 'input[name="dokumen_akte_kelahiran"]', maxSize: 4 }
+        { selector: 'input[name="dokumen_kk"]', maxSize: 2 },
+        { selector: 'input[name="dokumen_akte_kelahiran"]', maxSize: 2 }
     ];
     
     docInputs.forEach(item => {
         const input = document.querySelector(item.selector);
         if (input) {
             input.addEventListener('change', function() {
-                validateFile(this, item.maxSize, ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']);
+                validateFile(this, item.maxSize, ['image/jpeg', 'image/jpg', 'image/png']);
             });
         }
     });
@@ -989,22 +897,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (provinsiSekolah) {
-        provinsiSekolah.addEventListener('change', function() {
-            const provinsiId = this.value;
-            kabupatenSekolah.innerHTML = '<option value="">-- Pilih Kabupaten/Kota --</option>';
-            if (provinsiId) {
-                fetch(`${baseUrl}/api/provinsi/${provinsiId}/kabupaten`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(item => {
-                            kabupatenSekolah.innerHTML += `<option value="${item.id}">${item.name}</option>`;
-                        });
-                    });
-            }
-        });
-    }
-
     if (form) {
         form.addEventListener('submit', async function(e) {
             let isValid = true;
@@ -1036,8 +928,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { selector: 'input[name="no_kk"]', label: 'No KK' },
                 { selector: 'input[name="no_akta_lahir"]', label: 'No Akta Kelahiran' },
                 { selector: 'select[name="kewarganegaraan"]', label: 'Kewarganegaraan' },
-                { selector: 'select[name="id_sumber"]', label: 'Sumber Informasi' },
-                { selector: 'select[name="agama"]', label: 'Agama' },
+                { selector: 'select[name="nama_sumber"]', label: 'Sumber Informasi' },
                 { selector: 'textarea[name="alamat_lengkap"]', label: 'Alamat Lengkap' },
                 { selector: 'select[name="id_provinsi"]', label: 'Provinsi' },
                 { selector: 'select[name="id_kabupaten"]', label: 'Kabupaten' },

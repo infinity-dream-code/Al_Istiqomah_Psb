@@ -35,14 +35,28 @@ class RegisterController extends Controller
   public function enroll(Request $request)
 {
     $request->validate([
-        'nisn'              => 'nullable|digits:10|unique:data_peserta,nisn',
         'gender'            => 'required|in:L,P',
         'nama'              => 'required|string|max:100',
         'id_gelombang'      => 'required|integer',
         'id_jalur'          => 'required|integer',
-        'id_prodi'          => 'required|integer',
         'id_fakultas'       => 'required|integer',
+        'asal_sekolah'      => 'required|string|max:150',
+        'tahun_lulus'       => 'required|digits:4',
     ]);
+
+    // Jurusan tidak dipilih di form: harga diambil dari jalur + gelombang + sekolah.
+    $masterHarga = MasterHarga::where('id_fakultas', $request->id_fakultas)
+        ->where('id_gelombang', $request->id_gelombang)
+        ->where('id_jalur', $request->id_jalur)
+        ->orderByDesc('active')
+        ->orderBy('id')
+        ->first();
+
+    if (!$masterHarga) {
+        return back()
+            ->withInput()
+            ->withErrors(['id_fakultas' => 'Biaya pendaftaran untuk jalur, gelombang, dan sekolah yang dipilih belum diatur. Silakan hubungi panitia.']);
+    }
 
    $noDaftar = DataPeserta::generateNoPendaftaran($request->id_gelombang);
     $password = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
@@ -55,27 +69,15 @@ class RegisterController extends Controller
         'role'           => 'peserta',
     ]);
 
-    $masterHarga = MasterHarga::where('id_fakultas', $request->id_fakultas)
-        ->where('id_gelombang', $request->id_gelombang)
-        ->where('id_jalur', $request->id_jalur)
-        ->where('id_prodi', $request->id_prodi)
-        ->firstOrFail();
-
     $vaNumber = '751000' . $noDaftar;
 
     $gelombang = MasterGelombang::find($request->id_gelombang);
     $jalur     = MasterJalur::find($request->id_jalur);
     $fakultas  = MasterFakultas::find($request->id_fakultas);
-    $prodi     = MasterProdi::find($request->id_prodi);
 
     $provinsi       = MasterProvinsi::find($request->provinsi_id);
     $kabupaten      = MasterKabupaten::find($request->kabupaten_id);
     $kecamatan      = MasterKecamatan::find($request->kecamatan_id);
-    $provinsiSekolah = MasterProvinsi::find($request->provinsi_sekolah_id);
-    $kabupatenSekolah = MasterKabupaten::find($request->kabupaten_sekolah_id);
-    $kotaSekolah      = MasterKabupaten::find($request->kota_sekolah_id);
-
-    $jurusanSekolah = MasterJurusanSekolah::find($request->jurusan_sekolah);
 
     $pekerjaanIbu    = MasterPekerjaanOrtu::find($request->pekerjaan_ibu);
     $penghasilanIbu  = MasterPenghasilanOrtu::find($request->penghasilan_ibu);
@@ -88,15 +90,14 @@ class RegisterController extends Controller
         'nama_peserta'     => $request->nama,
         'tempat_lahir'     => $request->tempat_lahir,
         'tanggal_lahir'    => $request->tanggal_lahir,
-        'nisn'             => $request->nisn,
         'id_gelombang'     => $request->id_gelombang,
         'gelombang'        => $gelombang?->gelombang,
         'id_jalur'         => $request->id_jalur,
         'jalur'            => $jalur?->nama,
         'id_fakultas'      => $request->id_fakultas,
         'fakultas'         => $fakultas?->fakultas,
-        'id_prodi'         => $request->id_prodi,
-        'prodi'            => $prodi?->nama,
+        'id_prodi'         => $masterHarga->id_prodi,
+        'prodi'            => '-',
         'id_master_harga'  => $masterHarga->id,
         'gender'           => $request->gender,
         'status_paid'      => 0,
@@ -109,12 +110,6 @@ class RegisterController extends Controller
         'id_kecamatan'     => $request->kecamatan_id,
         'kecamatan'        => $kecamatan?->kecamatan,
         'nama_sekolah'     => $request->asal_sekolah,
-        'id_provinsi_sekolah' => $request->provinsi_sekolah_id,
-        'provinsi_sekolah'    => $provinsiSekolah?->Provinsi,
-        'id_kabupaten_sekolah'=> $request->kota_sekolah_id,
-        'kota_sekolah'        => $kotaSekolah?->kota,
-        'jurusan'          => $jurusanSekolah?->nama,
-        'id_jurusan'       => $request->jurusan_sekolah,
         'tahun_lulus'      => $request->tahun_lulus,
         'ibu_nama'         => $request->nama_ibu,
         'id_pekerjaan_ibu' => $request->pekerjaan_ibu,

@@ -52,7 +52,7 @@ class DataPsbAllExport implements FromCollection, WithHeadings
             $masterHarga = $p->id_master_harga ? MasterHarga::find($p->id_master_harga) : null;
             $bantuan = DataBantuan::where('id_peserta', $p->id)->first();
 
-            $verifikasi = ($p->foto && $p->dokumen_kk && $p->dokumen_akte_kelahiran && $p->dokumen_ktp_ortu) ? 'Lengkap' : 'Belum Lengkap';
+            $verifikasi = ($p->foto && $p->dokumen_kk && $p->dokumen_akte_kelahiran) ? 'Lengkap' : 'Belum Lengkap';
             $bayarRegistrasi = $p->status_pembayaran_registrasi == 1 ? 'Lunas' : 'Belum Lunas';
 
             return [

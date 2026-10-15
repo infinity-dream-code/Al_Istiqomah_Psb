@@ -1,0 +1,8 @@
+# Folder upload: jangan pernah jalankan/sajikan script, termasuk double extension (x.php.jpg).
+Options -ExecCGI -Indexes
+<FilesMatch "(?i)\.(php\d*|phtml|phar|pht|phps|pgif|inc|shtml|cgi|pl|py|asp|aspx|jsp|sh|svg|svgz|html?)(\.|$)">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

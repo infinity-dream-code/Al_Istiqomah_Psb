@@ -244,7 +244,7 @@ public function setKelulusanPeserta1(Request $request, $status)
         }
 
         $fieldWajib = ['no_hp','nik','no_kk','kewarganegaraan'];
-        $uploadWajib = ['foto','dokumen_kk','dokumen_ktp_ortu','dokumen_akte_kelahiran'];
+        $uploadWajib = ['foto','dokumen_kk','dokumen_akte_kelahiran'];
 
         $pesertaList = $query->get()->filter(function ($peserta) use ($fieldWajib) {
             foreach ($fieldWajib as $field) {
@@ -356,7 +356,6 @@ public function setKelulusanPeserta1(Request $request, $status)
         $uploadWajib = [
             'foto',
             'dokumen_kk',
-            'dokumen_ktp_ortu',
             'dokumen_akte_kelahiran',
         ];
 
@@ -794,7 +793,6 @@ public function setKelulusanPeserta(Request $request, $status)
     $uploadWajib = [
         'foto',
         'dokumen_kk',
-        'dokumen_ktp_ortu',
         'dokumen_akte_kelahiran',
     ];
 
@@ -885,7 +883,6 @@ public function cekBerkasSetUjian(Request $request)
     $uploadWajib = [
         'foto',
         'dokumen_kk',
-        'dokumen_ktp_ortu',
         'dokumen_akte_kelahiran',
     ];
 
