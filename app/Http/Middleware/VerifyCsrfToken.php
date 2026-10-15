@@ -11,7 +11,8 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        // keepalive GET tidak kena CSRF; biarkan kosong
+        // Logout tetap jalan walau token basi (session sudah putus). Risikonya cuma "dipaksa logout".
+        'ServiceLogout',
     ];
 
     /**

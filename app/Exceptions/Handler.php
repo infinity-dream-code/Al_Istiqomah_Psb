@@ -24,13 +24,16 @@ class Handler extends ExceptionHandler
             //
         });
 
-        $this->renderable(function (TokenMismatchException $e, Request $request) {
-            return $this->recoverFromCsrfMismatch($request);
-        });
     }
 
     public function render($request, Throwable $e)
     {
+        // Harus sebelum parent::render(): di sana TokenMismatchException sudah diubah jadi
+        // HttpException(419) sebelum callback renderable() dijalankan, jadi tidak pernah tertangkap.
+        if ($e instanceof TokenMismatchException) {
+            return $this->recoverFromCsrfMismatch($request);
+        }
+
         $response = parent::render($request, $e);
 
         if ($request->expectsJson() || $request->wantsJson()) {
