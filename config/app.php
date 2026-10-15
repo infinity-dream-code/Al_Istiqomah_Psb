@@ -18,6 +18,12 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Dibaca AppIdentity saat runtime; env() di luar folder config bernilai null ketika config di-cache.
+    'instance' => env('APP_INSTANCE'),
+    'auth_cookie' => env('AUTH_COOKIE'),
+    'session_cookie' => env('SESSION_COOKIE'),
+    'cache_prefix' => env('CACHE_PREFIX'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

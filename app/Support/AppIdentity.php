@@ -11,7 +11,7 @@ class AppIdentity
 {
     public static function id(): string
     {
-        $explicit = env('APP_INSTANCE');
+        $explicit = config('app.instance');
         if (is_string($explicit) && $explicit !== '') {
             return Str::slug($explicit, '_');
         }
@@ -30,16 +30,16 @@ class AppIdentity
 
     public static function sessionCookie(): string
     {
-        return env('SESSION_COOKIE') ?: (self::id() . '_session');
+        return config('app.session_cookie') ?: (self::id() . '_session');
     }
 
     public static function authCookie(): string
     {
-        return env('AUTH_COOKIE') ?: (self::id() . '_uid');
+        return config('app.auth_cookie') ?: (self::id() . '_uid');
     }
 
     public static function cachePrefix(): string
     {
-        return env('CACHE_PREFIX') ?: (self::id() . '_cache_');
+        return config('app.cache_prefix') ?: (self::id() . '_cache_');
     }
 }
