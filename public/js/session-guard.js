@@ -69,6 +69,79 @@
         if (document.visibilityState === 'visible') refreshToken();
     });
 
+    // Snapshot isian form sebelum submit; dipulihkan kalau server mengembalikan user ke form
+    // ini karena gagal simpan (meta form-recover), supaya ketikan user tidak hilang.
+    var DRAFT_PREFIX = 'psbku_draft:';
+    var DRAFT_TTL = 30 * 60 * 1000;
+    var SKIP_FIELD = /^(_token|_method|_csrf_retry|password|password_confirmation|current_password)$/;
+
+    function draftKey(form) {
+        var forms = Array.prototype.slice.call(document.forms);
+        return DRAFT_PREFIX + location.pathname + location.search + '#' + forms.indexOf(form);
+    }
+
+    function saveDraft(form) {
+        try {
+            var fields = [];
+            Array.prototype.forEach.call(form.elements, function (el) {
+                if (!el.name || SKIP_FIELD.test(el.name) || el.disabled) return;
+                var type = (el.type || '').toLowerCase();
+                if (type === 'file' || type === 'password' || type === 'submit' || type === 'button') return;
+                if (type === 'checkbox' || type === 'radio') {
+                    fields.push({ n: el.name, v: el.value, c: el.checked });
+                } else if (el.tagName === 'SELECT' && el.multiple) {
+                    fields.push({ n: el.name, m: Array.prototype.filter.call(el.options, function (o) { return o.selected; }).map(function (o) { return o.value; }) });
+                } else {
+                    fields.push({ n: el.name, v: el.value });
+                }
+            });
+            sessionStorage.setItem(draftKey(form), JSON.stringify({ t: Date.now(), f: fields }));
+        } catch (err) {}
+    }
+
+    function restoreDrafts() {
+        var recover = !!document.querySelector('meta[name="form-recover"]');
+        Array.prototype.forEach.call(document.forms, function (form) {
+            var key = draftKey(form);
+            var raw = null;
+            try { raw = sessionStorage.getItem(key); sessionStorage.removeItem(key); } catch (err) {}
+            if (!recover || !raw) return;
+
+            var draft;
+            try { draft = JSON.parse(raw); } catch (err) { return; }
+            if (!draft || !draft.f || Date.now() - draft.t > DRAFT_TTL) return;
+
+            var seen = {};
+            draft.f.forEach(function (item) {
+                var els = form.querySelectorAll('[name="' + item.n.replace(/"/g, '\\"') + '"]');
+                if (!els.length) return;
+                var idx = seen[item.n] || 0;
+                seen[item.n] = idx + 1;
+
+                if ('c' in item) {
+                    Array.prototype.forEach.call(els, function (el) {
+                        if (el.value === item.v) el.checked = item.c;
+                    });
+                    return;
+                }
+                var el = els.length > 1 ? els[idx] : els[0];
+                if (!el) return;
+                if (item.m) {
+                    Array.prototype.forEach.call(el.options, function (o) { o.selected = item.m.indexOf(o.value) !== -1; });
+                } else {
+                    el.value = item.v;
+                }
+                try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (err) {}
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', restoreDrafts);
+    } else {
+        restoreDrafts();
+    }
+
     // Sebelum submit form POST: refresh token dulu (cegah 419)
     document.addEventListener('submit', function (e) {
         var form = e.target;
@@ -76,6 +149,10 @@
         var method = (form.getAttribute('method') || 'GET').toUpperCase();
         if (method === 'GET') return;
         if (form.dataset.csrfReady === '1') return;
+
+        if (!/ServiceLog(in|out)/i.test(form.getAttribute('action') || '')) {
+            saveDraft(form);
+        }
 
         e.preventDefault();
         e.stopPropagation();

@@ -53,7 +53,7 @@ class Handler extends ExceptionHandler
             $fallback = Auth::check() ? AuthRedirect::dashboardPath() : '';
 
             if (!$request->isMethodSafe()) {
-                return redirect()->to($fallback !== '' ? $fallback : url()->previous());
+                return $this->backToForm($request, 'Data belum tersimpan karena terjadi gangguan. Isian Anda sudah dikembalikan, silakan coba simpan lagi.');
             }
 
             try {
@@ -74,6 +74,30 @@ class Handler extends ExceptionHandler
         }
 
         return $response;
+    }
+
+    /**
+     * Kembali ke halaman form asal beserta isiannya; dashboard hanya bila asal tidak diketahui.
+     */
+    private function backToForm(Request $request, string $message)
+    {
+        $previous = AuthRedirect::safeRelativeUrl(url()->previous());
+        $current = AuthRedirect::safeRelativeUrl($request->getRequestUri());
+
+        if ($previous === null || $previous === $current || AuthRedirect::isPublicBouncePath($previous)) {
+            $previous = Auth::check() ? AuthRedirect::dashboardPath() : '/';
+        }
+
+        try {
+            $input = $request->except(['_token', '_csrf_retry', '_method', 'password', 'password_confirmation', 'current_password']);
+            $input = array_filter($input, fn ($v) => !$v instanceof \Illuminate\Http\UploadedFile);
+        } catch (Throwable $e) {
+            $input = [];
+        }
+
+        return redirect()->to($previous)
+            ->withInput($input)
+            ->with('recover_error', $message);
     }
 
     private function recoverFromCsrfMismatch(Request $request)
@@ -103,17 +127,13 @@ class Handler extends ExceptionHandler
             ], 419)->header('X-CSRF-TOKEN', $token);
         }
 
-        // Sudah retry sekali: kembali diam-diam (jangan ke login)
+        // Sudah retry sekali: kembali ke form yang sedang diisi (jangan ke login / dashboard)
         if ($request->boolean('_csrf_retry')) {
-            if (Auth::check()) {
-                return redirect()->to(AuthRedirect::dashboardPath());
-            }
-
-            return redirect()->back()->withInput($request->except(['_token', '_csrf_retry']));
+            return $this->backToForm($request, 'Sesi diperbarui. Isian Anda sudah dikembalikan, silakan klik simpan sekali lagi.');
         }
 
         if (count($request->allFiles()) > 0) {
-            return redirect()->back();
+            return $this->backToForm($request, 'Sesi diperbarui. Silakan pilih ulang file lalu klik simpan sekali lagi.');
         }
 
         if (in_array($request->method(), ['GET', 'HEAD'], true)) {

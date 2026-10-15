@@ -279,7 +279,7 @@ class LoginController extends Controller
             $response = Http::timeout(8)
                 ->connectTimeout(5)
                 ->withHeaders(['Content-Type' => 'application/json'])
-                ->post('http://10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php', [
+                ->post(config('services.psb.ws_url'), [
                     'token' => $tokenCek,
                     'method' => 'CekTagihan',
                 ]);

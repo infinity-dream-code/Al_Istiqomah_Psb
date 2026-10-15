@@ -152,7 +152,7 @@ public function setKelulusanPeserta1(Request $request, $status)
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json'
-            ])->post('http://10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php', $payload);
+            ])->post(config('services.psb.ws_url'), $payload);
 
             if (!$response->successful()) {
                 return redirect()->back()->with('error', 'Gagal membuat tagihan');
@@ -723,7 +723,7 @@ public function setKelulusanPeserta(Request $request, $status)
 
             $response = \Http::withHeaders([
                 'Content-Type' => 'application/json'
-            ])->post('10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php', $payload);
+            ])->post(config('services.psb.ws_url'), $payload);
 
             Log::info('CreateTagihanBulk response', [
                 'status' => $response->status(),

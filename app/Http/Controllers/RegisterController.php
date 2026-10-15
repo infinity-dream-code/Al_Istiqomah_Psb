@@ -180,17 +180,25 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
 
     $jwtToken = JWT::encode($payload, $jwtKey, 'HS256');
 
-    $response = Http::withHeaders([
-    'Content-Type' => 'application/json'
-])->post("10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php", [
-    "token"  => $jwtToken,
-    "method" => "CreateTagihan"
-]);
+    // Peserta sudah tersimpan; kalau WS tagihan down, halaman sukses tetap tampil dan tagihan dibuat ulang saat halaman dibuka lagi.
+    $wsResponse = null;
+    try {
+        $response = Http::timeout(15)->connectTimeout(5)->withHeaders([
+            'Content-Type' => 'application/json'
+        ])->post(config('services.psb.ws_url'), [
+            "token"  => $jwtToken,
+            "method" => "CreateTagihan"
+        ]);
+        \Log::info('WS CreateTagihan raw', [$response->body()]);
+        $wsResponse = $response->json();
+    } catch (\Throwable $e) {
+        \Log::error('WS CreateTagihan gagal', [
+            'no_pendaftaran' => $peserta->no_pendaftaran,
+            'error' => $e->getMessage(),
+        ]);
+    }
 
-
-    \Log::info('WS CreateTagihan raw', [$response->body()]);
-
-    return view('pmb.success', compact('peserta', 'passwordPlain'))->with('ws_response', $response->json());
+    return view('pmb.success', compact('peserta', 'passwordPlain'))->with('ws_response', $wsResponse);
 }
 
 public function cekTagihan($no_pendaftaran)
@@ -201,7 +209,7 @@ public function cekTagihan($no_pendaftaran)
 
    $response = Http::withHeaders([
     'Content-Type' => 'application/json'
-])->post("10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php", [
+])->post(config('services.psb.ws_url'), [
     "token"  => $token,
     "method" => "CekTagihan"
 ]);
@@ -233,7 +241,7 @@ public function cekStatusRegis(Request $request)
 
     \Log::info('Cek Status Regis - Payload', $payload);
 
-    $response = \Http::post("10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php", [
+    $response = \Http::post(config('services.psb.ws_url'), [
         "token" => $token,
         "method" => "cekTagihanDibayar"
     ]);
@@ -285,7 +293,7 @@ public function cekStatus(Request $request)
 
     $token = \Firebase\JWT\JWT::encode($payload, $jwtKey, 'HS256');
 
-    $response = \Http::post("10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php", [
+    $response = \Http::post(config('services.psb.ws_url'), [
         "token" => $token,
         "method" => "cekTagihanDibayar"
     ]);
@@ -352,7 +360,7 @@ public function cekStatus1(Request $request)
 
     $token = \Firebase\JWT\JWT::encode($payload, $jwtKey, 'HS256');
 
-    $response = \Http::post("10.99.23.111/WS_PSB/WS_PSB_MASTER/index.php", [
+    $response = \Http::post(config('services.psb.ws_url'), [
         "token" => $token,
         "method" => "cekTagihanDibayar"
     ]);
