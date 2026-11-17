@@ -537,8 +537,6 @@ public function userlist(Request $request)
         $query->where('id_gelombang', $idGelombang);
     }
 
-    $query->where('status_paid', 1);
-
     $peserta = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
     return view('dashboard.list-user.index', compact(
@@ -587,7 +585,7 @@ public function userlist1(Request $request)
     $selectedTahunAkademik = $request->input('tahun_akademik');
     $idGelombang = $request->input('gelombang_id');
 
-    $query = DataPeserta::query()->where('status_paid', 1);
+    $query = DataPeserta::query();
 
     if ($idGelombang) {
         $query->where('id_gelombang', $idGelombang);
