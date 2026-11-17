@@ -24,6 +24,12 @@
                 </div>
             @endif
 
+            @if(!empty($akunWarning))
+                <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">
+                    {{ $akunWarning }}
+                </div>
+            @endif
+
             <form action="{{ route('master-harga.update1', ['role' => str_replace(' ', '-', $role ?? 'admin'), 'id' => $masterHarga->id]) }}" 
                   method="POST" class="space-y-6">
                 @csrf

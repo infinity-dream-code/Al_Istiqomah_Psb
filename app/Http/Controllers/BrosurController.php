@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Brosur;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BrosurController extends Controller
 {
@@ -31,8 +32,8 @@ public function store(Request $request)
     ]);
 
     $file = $request->file('brosur');
-    $originalName = $file->getClientOriginalName();
-    $path = $file->storeAs('brosur', $originalName, 'public');
+    $ext = strtolower($file->getClientOriginalExtension() ?: 'bin');
+    $path = $file->storeAs('brosur', Str::random(40) . '.' . $ext, 'public');
 
     Brosur::create([
         'id_user' => Auth::id(),
@@ -62,8 +63,8 @@ public function update(Request $request, Brosur $setting_brosur)
         }
 
         $file = $request->file('brosur');
-        $originalName = $file->getClientOriginalName();
-        $path = $file->storeAs('brosur', $originalName, 'public');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'bin');
+        $path = $file->storeAs('brosur', Str::random(40) . '.' . $ext, 'public');
 
         $setting_brosur->brosur = $path;
         $setting_brosur->tanggal_upload = now();

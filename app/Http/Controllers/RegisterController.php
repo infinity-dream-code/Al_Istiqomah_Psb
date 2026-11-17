@@ -40,8 +40,8 @@ class RegisterController extends Controller
         'id_gelombang'      => 'required|integer',
         'id_jalur'          => 'required|integer',
         'id_fakultas'       => 'required|integer',
-        'asal_sekolah'      => 'required|string|max:150',
-        'tahun_lulus'       => 'required|digits:4',
+        'asal_sekolah'      => 'nullable|string|max:150',
+        'tahun_lulus'       => 'nullable|digits:4',
     ]);
 
     // Jurusan tidak dipilih di form: harga diambil dari jalur + gelombang + sekolah.

@@ -252,12 +252,12 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block label-text mb-2">Nama Sekolah Asal<span class="required">*</span></label>
-                                    <input type="text" name="asal_sekolah" required placeholder="Contoh: SD Negeri 1 Kuningan" class="form-input">
+                                    <label class="block label-text mb-2">Nama Sekolah Asal <span class="text-gray-400 text-xs">(opsional)</span></label>
+                                    <input type="text" name="asal_sekolah" placeholder="Contoh: SD Negeri 1 Kuningan" class="form-input">
                                 </div>
                                 <div>
-                                    <label class="block label-text mb-2">Tahun Lulus <span class="required">*</span></label>
-                                    <input type="text" name="tahun_lulus" required placeholder="2024" class="form-input">
+                                    <label class="block label-text mb-2">Tahun Lulus <span class="text-gray-400 text-xs">(opsional)</span></label>
+                                    <input type="text" name="tahun_lulus" placeholder="2024" class="form-input">
                                 </div>
                             </div>
 

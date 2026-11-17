@@ -77,21 +77,7 @@ public function create(Request $request)
         ->get();
     $fakultas = MasterFakultas::where('aktif', 1)->orderBy('fakultas')->get();
 
-    $akuns = [];
-    try {
-        $client = new Client();
-        $response = $client->post(config('services.psb.ws_url'), [
-            'json' => [
-                'method' => 'getUAkun',
-                'token'  => '53c2f9aace5478a11815c65fcdb1a3dc29b60c3e102489384e3c1701f4355fa4'
-            ],
-            'timeout' => 10
-        ]);
-        $body = json_decode($response->getBody()->getContents(), true);
-        if (isset($body['data'])) {
-            $akuns = $body['data'];
-        }
-    } catch (\Exception $e) {}
+    [$akuns, $akunWarning] = $this->fetchAkunList();
 
     $temporary = null;
     if ($request->filled(['id_jalur','id_fakultas','id_prodi'])) {
@@ -102,7 +88,7 @@ public function create(Request $request)
     }
 
     return view('dashboard.settings.master-harga.tambah',
-        compact('jalurs','gelombangs','fakultas','akuns','temporary'));
+        compact('jalurs','gelombangs','fakultas','akuns','akunWarning','temporary'));
 }
 
 
@@ -162,28 +148,15 @@ public function edit($id)
         ->orderBy('fakultas')
         ->get();
 
-    $akuns = [];
-    try {
-        $client = new \GuzzleHttp\Client();
-        $response = $client->post(config('services.psb.ws_url'), [
-            'json' => [
-                'method' => 'getUAkun',
-                'token'  => '53c2f9aace5478a11815c65fcdb1a3dc29b60c3e102489384e3c1701f4355fa4'
-            ],
-            'timeout' => 10
-        ]);
-        $body = json_decode($response->getBody()->getContents(), true);
-        if (isset($body['data'])) {
-            $akuns = $body['data'];
-        }
-    } catch (\Exception $e) {}
+    [$akuns, $akunWarning] = $this->fetchAkunList();
 
     return view('dashboard.settings.master-harga.edit', compact(
         'masterHarga',
         'jalurs',
         'gelombangs',
         'fakultas',
-        'akuns'
+        'akuns',
+        'akunWarning'
     ));
 }
 
@@ -331,24 +304,10 @@ public function edit1($role, $id)
         ->orderBy('fakultas')
         ->get();
 
-    $akuns = [];
-    try {
-        $client = new \GuzzleHttp\Client();
-        $response = $client->post(config('services.psb.ws_url'), [
-            'json' => [
-                'method' => 'getUAkun',
-                'token'  => '53c2f9aace5478a11815c65fcdb1a3dc29b60c3e102489384e3c1701f4355fa4'
-            ],
-            'timeout' => 10
-        ]);
-        $body = json_decode($response->getBody()->getContents(), true);
-        if (isset($body['data'])) {
-            $akuns = $body['data'];
-        }
-    } catch (\Exception $e) {}
+    [$akuns, $akunWarning] = $this->fetchAkunList();
 
     return view('dashboard-unit.settings.master-harga.edit', compact(
-        'masterHarga', 'jalurs', 'gelombangs', 'fakultas', 'akuns', 'menus', 'role'
+        'masterHarga', 'jalurs', 'gelombangs', 'fakultas', 'akuns', 'akunWarning', 'menus', 'role'
     ));
 }
 
@@ -586,6 +545,35 @@ public function store(Request $request)
     );
 
     return redirect('PmbMstPendaftarans/setting-harga')->with('success', 'Data berhasil disimpan');
+}
+
+/**
+ * @return array{0: array<int, array>, 1: string|null}
+ */
+private function fetchAkunList(): array
+{
+    try {
+        $client = new Client();
+        $response = $client->post(config('services.psb.ws_url'), [
+            'json' => [
+                'method' => 'getUAkun',
+                'token'  => '53c2f9aace5478a11815c65fcdb1a3dc29b60c3e102489384e3c1701f4355fa4',
+            ],
+            'timeout' => 10,
+        ]);
+        $body = json_decode($response->getBody()->getContents(), true);
+        $akuns = (isset($body['data']) && is_array($body['data'])) ? $body['data'] : [];
+
+        if ($akuns === []) {
+            return [[], 'Daftar akun SIKEU kosong. Pastikan post tagihan daful sudah ditambahkan di master post SIKEU.'];
+        }
+
+        return [$akuns, null];
+    } catch (\Throwable $e) {
+        Log::warning('WS getUAkun gagal', ['error' => $e->getMessage()]);
+
+        return [[], 'Gagal memuat akun SIKEU. Tagihan daful belum bisa dipilih sampai koneksi WS pulih.'];
+    }
 }
 
 }

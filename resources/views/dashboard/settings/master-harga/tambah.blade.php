@@ -10,6 +10,11 @@
             </a>
         </div>
         <div class="p-6">
+            @if(!empty($akunWarning))
+                <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">
+                    {{ $akunWarning }}
+                </div>
+            @endif
             <form action="{{ route('master-harga.store') }}" method="POST" class="space-y-6">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

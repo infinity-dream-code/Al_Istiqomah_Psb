@@ -374,16 +374,16 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Sekolah *</label>
-                            <input type="text" name="nama_sekolah" class="w-full px-4 py-3 border {{ empty($peserta->nama_sekolah) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->nama_sekolah }}" placeholder="Nama sekolah asal">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Sekolah <span class="text-gray-400 text-xs">(opsional)</span></label>
+                            <input type="text" name="nama_sekolah" class="w-full px-4 py-3 border border-gray-300 focus:ring-blue-500 rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->nama_sekolah }}" placeholder="Nama sekolah asal">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Lulus *</label>
-                            <input type="text" name="tahun_lulus" class="w-full px-4 py-3 border {{ empty($peserta->tahun_lulus) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->tahun_lulus }}" placeholder="YYYY">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Lulus <span class="text-gray-400 text-xs">(opsional)</span></label>
+                            <input type="text" name="tahun_lulus" class="w-full px-4 py-3 border border-gray-300 focus:ring-blue-500 rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->tahun_lulus }}" placeholder="YYYY">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">NISN *</label>
-                            <input type="text" name="nisn" class="w-full px-4 py-3 border {{ empty($peserta->nisn) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500' }} rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->nisn }}" placeholder="10 digit NISN">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">NISN <span class="text-gray-400 text-xs">(opsional)</span></label>
+                            <input type="text" name="nisn" class="w-full px-4 py-3 border border-gray-300 focus:ring-blue-500 rounded-lg focus:ring-2 focus:border-transparent transition duration-200" value="{{ $peserta->nisn }}" placeholder="10 digit NISN">
                         </div>
                     </div>
                 </div>
@@ -936,10 +936,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { selector: 'input[name="dusun"]', label: 'Kelurahan/Desa' },
                 { selector: 'input[name="kode_pos"]', label: 'Kode Pos' },
                 { selector: 'input[name="ibu_nama"]', label: 'Nama Ibu' },
-                { selector: 'input[name="ayah_nama"]', label: 'Nama Ayah' },
-                { selector: 'input[name="nama_sekolah"]', label: 'Nama Sekolah' },
-                { selector: 'input[name="tahun_lulus"]', label: 'Tahun Lulus' },
-                { selector: 'input[name="nisn"]', label: 'NISN' }
+                { selector: 'input[name="ayah_nama"]', label: 'Nama Ayah' }
             ];
             
             requiredFields.forEach(field => {
