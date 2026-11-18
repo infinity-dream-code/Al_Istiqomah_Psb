@@ -28,7 +28,7 @@ public function detailRegistrasi($encoded)
         ->orderBy('created_at', 'desc')
         ->first();
     
-    return view('dashboard.list-user.surat-registrasi', compact('peserta','tahun_akademik','tanggalSekarang','tagihan'));
+    return view('dashboard-unit.list-user.surat-registrasi', compact('peserta','tahun_akademik','tanggalSekarang','tagihan'));
 }
 
 
@@ -185,6 +185,11 @@ public function updatepeserta(Request $request, $id)
     } else {
         $peserta->save();
         $message = 'Nama dan nomor HP peserta berhasil diperbarui.';
+    }
+
+    if ($peserta->user) {
+        $peserta->user->nama = $peserta->nama_peserta;
+        $peserta->user->save();
     }
 
     return redirect()->route('users.list')->with('success', $message);
@@ -400,6 +405,11 @@ public function updatepeserta1(Request $request, $role, $id)
     } else {
         $peserta->save();
         $message = 'Nama dan nomor HP peserta berhasil diperbarui.';
+    }
+
+    if ($peserta->user) {
+        $peserta->user->nama = $peserta->nama_peserta;
+        $peserta->user->save();
     }
 
     return redirect()->route('users.list1', ['role' => $role])->with('success', $message);
@@ -731,6 +741,11 @@ public function update1(Request $request, $role, $id)
     $user->role = $request->role;
     $user->save();
 
+    if (strtolower((string) $user->role) === 'peserta' && $user->peserta) {
+        $user->peserta->nama_peserta = $request->nama;
+        $user->peserta->save();
+    }
+
     return redirect()->route('users.index1', ['role' => $role])->with('success', 'User updated successfully');
 }
 
@@ -760,6 +775,11 @@ public function update1(Request $request, $role, $id)
         }
         $user->role = $request->role;
         $user->save();
+
+        if (strtolower((string) $user->role) === 'peserta' && $user->peserta) {
+            $user->peserta->nama_peserta = $request->nama;
+            $user->peserta->save();
+        }
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }

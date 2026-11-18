@@ -28,15 +28,83 @@ class PesertaController extends Controller
 
 public function index()
 {
-    $peserta = auth()->user()->peserta()->with(['relasiGelombang', 'ujian'])->first();
+    $peserta = auth()->user()->peserta()->with(['relasiGelombang', 'ujian', 'masterHarga'])->first();
 
-    return view('peserta.index', compact('peserta'));
+    $step1Done = $peserta && (int) $peserta->status_paid === 1;
+    $step2Done = $peserta && $this->isKelengkapanLengkap($peserta);
+    $step3Done = $peserta && $peserta->ujian->isNotEmpty();
+    $step4Done = $peserta && in_array(strtolower((string) $peserta->status_ujian), ['lulus', 'gagal'], true);
+
+    $saldoVa = null;
+    if ($peserta && $peserta->va_number) {
+        $saldoVa = \App\Models\SaldoVa::findByVa($peserta->va_number);
+    }
+
+    return view('peserta.index', compact(
+        'peserta',
+        'step1Done',
+        'step2Done',
+        'step3Done',
+        'step4Done',
+        'saldoVa'
+    ));
+}
+
+private function isKelengkapanLengkap(DataPeserta $peserta): bool
+{
+    foreach (['nik', 'no_kk', 'no_hp', 'kewarganegaraan', 'alamat_lengkap', 'foto', 'dokumen_kk', 'dokumen_akte_kelahiran'] as $field) {
+        if (empty($peserta->{$field})) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+public function suratKelulusan()
+{
+    $peserta = auth()->user()->peserta;
+    if (!$peserta || !in_array(strtolower((string) $peserta->status_ujian), ['lulus', 'gagal'], true)) {
+        abort(403, 'Surat kelulusan belum tersedia.');
+    }
+
+    $gelombang = $peserta->relasiGelombang;
+    $tahun_akademik = $gelombang?->tahun_akademik ?? '-';
+    $tanggalSekarang = Carbon::now()->translatedFormat('d F Y');
+    $status = strtolower((string) $peserta->status_ujian);
+
+    return view('peserta.surat-kelulusan', compact('peserta', 'tahun_akademik', 'tanggalSekarang', 'status'));
+}
+
+public function suratRegistrasi()
+{
+    $peserta = auth()->user()->peserta;
+    if (!$peserta || strtolower((string) $peserta->status_ujian) !== 'lulus') {
+        abort(403, 'Surat registrasi hanya untuk peserta yang lulus.');
+    }
+
+    $gelombang = $peserta->relasiGelombang;
+    $tahun_akademik = $gelombang?->tahun_akademik ?? '-';
+    $tanggalSekarang = Carbon::now()->translatedFormat('d F Y');
+    $tagihan = \App\Models\Tagihan::where('id_peserta', $peserta->id)
+        ->orderByDesc('created_at')
+        ->first();
+
+    return view('dashboard-unit.list-user.surat-registrasi', compact(
+        'peserta',
+        'tahun_akademik',
+        'tanggalSekarang',
+        'tagihan'
+    ));
 }
 
 public function lengkapi_data()
 {
     $peserta = auth()->user()->peserta ?? new DataPeserta();
-    $peserta->load(['bantuan','masterHarga']); 
+    $peserta->load(['bantuan','masterHarga']);
+
+    // Saat validasi gagal, isi ulang form dari old input supaya ketikan user tidak hilang.
+    $this->applyOldInputToPeserta($peserta);
 
     $negaraList = MasterNegara::all();
     $sumberInformasiList = self::SUMBER_INFORMASI;
@@ -67,6 +135,47 @@ public function lengkapi_data()
         'pekerjaanList',
         'penghasilanList'
     ));
+}
+
+private function applyOldInputToPeserta(DataPeserta $peserta): void
+{
+    if (!session()->hasOldInput()) {
+        return;
+    }
+
+    $fields = [
+        'nama_peserta', 'nik', 'tempat_lahir', 'tanggal_lahir',
+        'nisn', 'no_akta_lahir', 'no_kk',
+        'kewarganegaraan', 'email', 'no_hp', 'alamat_lengkap',
+        'dusun', 'id_provinsi', 'id_kabupaten', 'id_kecamatan', 'kode_pos',
+        'nama_sekolah', 'tahun_lulus',
+        'ibu_nama', 'ibu_tanggal_lahir', 'ibu_nik',
+        'id_pendidikan_ibu', 'id_pekerjaan_ibu', 'id_penghasilan_ibu', 'ibu_no_tlp',
+        'ayah_nama', 'ayah_tanggal_lahir', 'ayah_nik',
+        'id_pendidikan_ayah', 'id_pekerjaan_ayah', 'id_penghasilan_ayah', 'ayah_no_tlp',
+        'jml_saudara_kandung', 'jml_saudara_yayasan', 'nama_sumber',
+    ];
+
+    $dateFields = ['tanggal_lahir', 'ibu_tanggal_lahir', 'ayah_tanggal_lahir'];
+
+    foreach ($fields as $field) {
+        if (!session()->hasOldInput($field)) {
+            continue;
+        }
+
+        $value = old($field);
+        if (in_array($field, $dateFields, true)) {
+            $peserta->{$field} = $value ? Carbon::parse($value) : null;
+            continue;
+        }
+
+        $peserta->{$field} = $value;
+    }
+
+    if (session()->hasOldInput('gender')) {
+        $gender = old('gender');
+        $peserta->gender = $gender === 'Laki-laki' ? 'L' : ($gender === 'Perempuan' ? 'P' : $gender);
+    }
 }
 
 
@@ -183,6 +292,11 @@ public function simpan_data(Request $request)
     }
 
     $peserta->save();
+
+    if ($peserta->nama_peserta) {
+        $user->nama = $peserta->nama_peserta;
+        $user->save();
+    }
 
     return redirect('PmbMstPendaftarans/lengkapi_data')->with('success', 'Data berhasil disimpan!');
 }

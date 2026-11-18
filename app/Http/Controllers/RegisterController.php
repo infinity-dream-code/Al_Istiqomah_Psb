@@ -102,6 +102,7 @@ class RegisterController extends Controller
         'gender'           => $request->gender,
         'status_paid'      => 0,
         'va_number'        => $vaNumber,
+        'alamat_lengkap'   => $request->alamat,
         'dusun'            => $request->dusun,
         'id_provinsi'      => $request->provinsi_id,
         'provinsi'         => $provinsi?->Provinsi,

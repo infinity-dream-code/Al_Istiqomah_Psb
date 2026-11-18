@@ -85,6 +85,8 @@ Route::middleware(['auth', 'role:peserta'])->group(function () {
     Route::post('/PmbMstPendaftarans/lengkapi_data', [PesertaController::class, 'simpan_data']);
 
     Route::post('/peserta/simpan-bantuan', [PesertaController::class, 'simpan_bantuan'])->name('peserta.simpan_bantuan');
+    Route::get('/peserta/surat-kelulusan', [PesertaController::class, 'suratKelulusan'])->name('peserta.surat.kelulusan');
+    Route::get('/peserta/surat-registrasi', [PesertaController::class, 'suratRegistrasi'])->name('peserta.surat.registrasi');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -348,7 +348,7 @@
                     <div>Calon Siswa</div>
                 </div>
                 <div class="signature-right">
-                    <div>Padang, {{ $tanggalSekarang }}</div>
+                    <div>{{ config('client.city') }}, {{ $tanggalSekarang }}</div>
                     <div>PANITIA PSB</div>
                     <div>PSB {{ $peserta->fakultas }}</div>
                     <div class="signature-space"></div>
