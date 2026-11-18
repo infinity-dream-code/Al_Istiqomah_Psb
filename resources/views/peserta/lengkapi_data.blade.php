@@ -179,7 +179,7 @@
                                         <li>Baju warna putih (Bukan seragam SMA), berdasi hitam polos.</li>
                                         <li> ⁠Mahasiswi memakai jilbab putih dan Mahasiswa memakai peci hitam polos.</li>
                                        <li>Bukan foto selfie, tidak berkacamata.</li>
-                                        <li>⁠File berupa format .jpg dengan ukuran tidak lebih dari 2 MB, dimensi Foto 3x4 / 4x6.</li>
+                                        <li>File JPG/PNG max 2 MB, rasio mendekati 3:4 (portrait). Akan diseragamkan ke 300×400.</li>
                                     </ol>
                                 </div>
                             </div>
@@ -717,8 +717,10 @@ document.addEventListener('DOMContentLoaded', function() {
             img.onload = function() {
                 const width = this.naturalWidth;
                 const height = this.naturalHeight;
-                if (width !== height * 3 / 4) {
-                    createErrorElement(input, 'Foto harus berukuran persis 3x4 (contoh: 300x400px)');
+                const ratio = height > 0 ? (width / height) : 0;
+                const target = 3 / 4;
+                if (Math.abs(ratio - target) / target > 0.05) {
+                    createErrorElement(input, 'Foto harus mendekati rasio 3:4 (portrait). Contoh: 300x400, 450x600.');
                     resolve(false);
                 } else {
                     removeError(input);
@@ -961,7 +963,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isDimensionsValid = await validatePhotoDimensions(photoInput);
                 if (!isDimensionsValid) {
                     isValid = false;
-                    errors.push('Dimensi foto tidak sesuai (harus 3:4)');
+                    errors.push('Dimensi foto tidak sesuai (harus mendekati rasio 3:4)');
                 }
             }
             

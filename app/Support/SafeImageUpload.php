@@ -89,13 +89,23 @@ class SafeImageUpload
 
     /**
      * Simpan hasil re-encode. Panggil hanya setelah check() lolos.
+     * Jika $coverWidth & $coverHeight diisi, gambar di-cover crop ke ukuran itu.
      */
-    public static function store(UploadedFile $file, string $directory, string $disk = 'public'): string
-    {
+    public static function store(
+        UploadedFile $file,
+        string $directory,
+        string $disk = 'public',
+        ?int $coverWidth = null,
+        ?int $coverHeight = null
+    ): string {
         $source = $file->getRealPath();
         $extension = self::MIME_TO_EXT[self::detectMime($source)] ?? 'jpg';
 
         $image = (new ImageManager(new Driver()))->read($source);
+        if ($coverWidth && $coverHeight) {
+            $image = $image->cover($coverWidth, $coverHeight);
+            $extension = 'jpg';
+        }
         $encoded = $extension === 'png' ? $image->toPng() : $image->toJpeg(90);
 
         $path = trim($directory, '/') . '/' . Str::random(40) . '.' . $extension;

@@ -275,10 +275,15 @@ public function simpan_data(Request $request)
     if ($request->hasFile('foto')) {
         $foto = $request->file('foto');
         $img = (new ImageManager(new Driver()))->read($foto->getRealPath());
-        if (round($img->width() / $img->height(), 2) != round(3 / 4, 2)) {
-            return back()->withErrors(['foto' => 'Foto harus berukuran 3x4 (rasio 3:4)'])->withInput();
+        $ratio = $img->height() > 0 ? ($img->width() / $img->height()) : 0;
+        $target = 3 / 4;
+        // Toleransi ±5% dari rasio 3:4; pixel exact 300x400 tidak wajib.
+        if (abs($ratio - $target) / $target > 0.05) {
+            return back()->withErrors([
+                'foto' => 'Foto harus mendekati rasio 3:4 (portrait). Contoh yang diterima: 300x400, 450x600, dll.',
+            ])->withInput();
         }
-        $this->replaceUpload($peserta, 'foto', $foto, "uploads/foto/foto-$tahun");
+        $this->replaceUpload($peserta, 'foto', $foto, "uploads/foto/foto-$tahun", 300, 400);
     }
 
     $dokumen = [
@@ -301,10 +306,16 @@ public function simpan_data(Request $request)
     return redirect('PmbMstPendaftarans/lengkapi_data')->with('success', 'Data berhasil disimpan!');
 }
 
-private function replaceUpload(DataPeserta $peserta, string $field, \Illuminate\Http\UploadedFile $file, string $directory): void
-{
+private function replaceUpload(
+    DataPeserta $peserta,
+    string $field,
+    \Illuminate\Http\UploadedFile $file,
+    string $directory,
+    ?int $coverWidth = null,
+    ?int $coverHeight = null
+): void {
     $old = $peserta->$field;
-    $peserta->$field = SafeImageUpload::store($file, $directory);
+    $peserta->$field = SafeImageUpload::store($file, $directory, 'public', $coverWidth, $coverHeight);
 
     if ($old && $old !== $peserta->$field && Storage::disk('public')->exists($old)) {
         Storage::disk('public')->delete($old);
