@@ -34,7 +34,6 @@
 
 @if($errors->any())
     <div class="mb-4 p-4 rounded-lg bg-red-100 border border-red-400 text-red-700">
-        <p class="font-semibold mb-1">Data belum tersimpan. Perbaiki isian di bawah — nilai yang sudah Anda ketik tetap ada di form.</p>
         <ul class="list-disc pl-5">
             @foreach($errors->all() as $error)
                 <li>{{ $error }}</li>
