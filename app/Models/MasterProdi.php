@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class MasterProdi extends Model
 {
     use HasFactory;
+    use Concerns\UsesSikeuConnection;
 
     protected $table = 'master_prodi';
 

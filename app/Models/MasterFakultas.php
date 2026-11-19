@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class MasterFakultas extends Model
 {
     use HasFactory;
+    use Concerns\UsesSikeuConnection;
 
     protected $table = 'master_fakultas';
 

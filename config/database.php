@@ -17,6 +17,9 @@ return [
 
     'default' => env('DB_CONNECTION', 'mysql'),
 
+    // Master SPMB (jalur/gelombang/sekolah/harga) + SIKEU (siswa/tagihan) di DB 56.
+    'sikeu_connection' => env('DB_SIKEU_CONNECTION', 'sikeu'),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections
@@ -61,6 +64,25 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 // Gagal cepat daripada hang puluhan detik (terasa "error tiba-tiba")
+                PDO::ATTR_TIMEOUT => (int) env('DB_TIMEOUT', 5),
+            ]) : [],
+        ],
+
+        'sikeu' => [
+            'driver' => 'mysql',
+            'host' => env('DB_SIKEU_HOST', '101.50.2.56'),
+            'port' => env('DB_SIKEU_PORT', '3306'),
+            'database' => env('DB_SIKEU_DATABASE', 'al_istiqomah_sikeu'),
+            'username' => env('DB_SIKEU_USERNAME', 'root'),
+            'password' => env('DB_SIKEU_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 PDO::ATTR_TIMEOUT => (int) env('DB_TIMEOUT', 5),
             ]) : [],
         ],
