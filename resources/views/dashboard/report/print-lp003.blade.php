@@ -28,7 +28,7 @@
 <div class="container {{ $page > 0 ? 'page-break' : '' }}">
     <div class="header">
         <div class="logo"><img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}"></div>
-        <div class="school-name">PSB {{ config('client.name') }}</div>
+        <div class="school-name">SPMB {{ config('client.name') }}</div>
         <div class="address">{{ config('client.region') }}</div>
     </div>
 
@@ -68,7 +68,7 @@
     <div class="footer-info">
         <div style="text-align:left; float:left;">
             <div>{{ config('client.city') }}, {{ $today }}</div>
-            <div>Petugas PSB</div>
+            <div>Petugas SPMB</div>
             <div style="margin-top:80px;"><strong>Admin</strong></div>
         </div>
         <div style="text-align:right; float:right;">

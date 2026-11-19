@@ -2,7 +2,7 @@
 
 @section('content')
 <div id="on-off" class="tab-content opacity-100 p-4">
-    <h3 class="text-xl font-bold text-gray-700 mb-6">Set On/Off PSB</h3>
+    <h3 class="text-xl font-bold text-gray-700 mb-6">Set On/Off SPMB</h3>
 
     <div class="overflow-x-auto bg-white rounded-lg shadow">
         <table class="min-w-full text-sm text-left text-gray-600">

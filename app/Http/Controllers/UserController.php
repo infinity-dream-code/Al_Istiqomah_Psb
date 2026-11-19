@@ -478,13 +478,21 @@ public function cetakInfoEnroll($nama, $no_pendaftaran, $jalur)
     $harga = \App\Models\MasterHarga::find($peserta->id_master_harga);
     $biayaPendaftaran = $harga ? $harga->harga_final : 0;
 
-    return view('dashboard.list-user.info', compact(
+    $response = response()->view('dashboard.list-user.info', compact(
         'peserta',
         'user',
         'createdAt',
         'cetak',
         'biayaPendaftaran'
     ));
+
+    if (request()->boolean('download')) {
+        $filename = 'info-pendaftaran-' . $peserta->no_pendaftaran . '.html';
+        $response->header('Content-Type', 'text/html; charset=UTF-8');
+        $response->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    return $response;
 }
 
 

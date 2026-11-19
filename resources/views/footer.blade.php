@@ -33,10 +33,10 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid lg:grid-cols-3 gap-12">
                <div class=" text-white rounded-2xl p-8 shadow-lg">
-    <h3 class="text-4xl font-extrabold text-yellow-400 mb-1 tracking-wide">PSB {{ config('client.name') }}</h3>
+    <h3 class="text-4xl font-extrabold text-yellow-400 mb-1 tracking-wide">SPMB {{ config('client.name') }}</h3>
     <p class="text-gray-300 text-base mb-5">{{ config('client.region') }}</p>
     <p class="text-gray-300 text-lg leading-relaxed mb-6">
-        Sistem PSB (Penerimaan Siswa Baru) adalah platform digital yang memudahkan calon siswa untuk melakukan pendaftaran dan memantau status pendaftaran hingga kelulusan secara online.
+        Sistem {{ config('client.program') }} ({{ config('client.program_long') }}) adalah platform digital yang memudahkan calon siswa untuk melakukan pendaftaran dan memantau status pendaftaran hingga kelulusan secara online.
     </p>
     <ul class="space-y-4 text-gray-200 text-base">
         <li class="flex items-start">
@@ -117,7 +117,7 @@
         
         <div class="border-t border-pmb-green-700 mt-12 pt-8">
             <div class="max-w-7xl mx-auto px-4 text-center text-gray-400">
-                <p class="text-lg">© 2025 Copyright: <a href="{{url('/')}}" class="no-underline text-yellow-400 hover:underline font-semibold">PSB {{ config('client.name') }}</a></p>
+                <p class="text-lg">© 2025 Copyright: <a href="{{url('/')}}" class="no-underline text-yellow-400 hover:underline font-semibold">SPMB {{ config('client.name') }}</a></p>
             </div>
         </div>
     </footer>

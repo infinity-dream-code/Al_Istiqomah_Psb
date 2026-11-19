@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSB {{ config('client.name') }}</title>
+    <title>SPMB {{ config('client.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -150,12 +150,12 @@
     <button class="menu-item w-full flex items-center justify-between px-6 py-3 text-white font-medium dropdown-toggle hover:bg-green-700 transition-colors" data-target="psb-dropdown" data-menu="psb">
         <div class="flex items-center">
             <i class="fas fa-cogs mr-3 w-4 text-center"></i>
-            <span class="text-sm font-semibold">SETTING PSB</span>
+            <span class="text-sm font-semibold">SETTING SPMB</span>
         </div>
         <i class="fas fa-chevron-down text-xs transition-transform dropdown-arrow"></i>
     </button>
     <div id="psb-dropdown" class="dropdown-content bg-green-700">
-        <a href="{{ url('/PmbMstPendaftarans/setting-gelombang') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="psb">Gelombang PSB</a>
+        <a href="{{ url('/PmbMstPendaftarans/setting-gelombang') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="psb">Gelombang SPMB</a>
         <a href="{{ url('/PmbMstPendaftarans/setting-harga') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="psb">Master Harga</a>
         <a href="{{ url('/PmbMstPendaftarans/setting-pendaftaran') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="psb">On/Off Pendaftaran</a>
         <a href="{{ url('/PmbMstPendaftarans/setting-slider') }}" class="block px-12 py-2 text-sm hover:bg-green-800 transition-colors" data-menu="psb">Image Slider</a>

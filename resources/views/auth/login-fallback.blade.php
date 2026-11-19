@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - PSB {{ config('client.name') }}</title>
+    <title>Login - SPMB {{ config('client.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <style>
         body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh; align-items: center; justify-content: center; background: #f8fafc; margin: 0; }
@@ -19,7 +19,7 @@
     <form method="POST" action="{{ url('/ServiceLogin') }}">
         @csrf
         <input type="hidden" name="next" value="{{ $next ?? '' }}">
-        <h1>PSB {{ config('client.name') }}</h1>
+        <h1>SPMB {{ config('client.name') }}</h1>
         @php $loginError = session('login_error') ?: $errors->first(); @endphp
         @if ($loginError)
             <p style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:10px 12px;border-radius:8px;font-size:14px;margin:0 0 14px;">{{ $loginError }}</p>

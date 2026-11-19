@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Keterangan {{ $status === 'lulus' ? 'Lulus' : 'Tidak Lulus' }} - PSB {{ config('client.name') }}</title>
+    <title>Surat Keterangan {{ $status === 'lulus' ? 'Lulus' : 'Tidak Lulus' }} - SPMB {{ config('client.name') }}</title>
     <style>
         body { font-family: 'Times New Roman', serif; margin: 0; padding: 20px; background: #f5f5f5; line-height: 1.5; }
         .container { background: #fff; max-width: 800px; margin: 0 auto; padding: 40px; box-shadow: 0 0 20px rgba(0,0,0,.08); }
@@ -29,7 +29,7 @@
 <div class="container">
     <div class="header">
         <div class="logo"><img src="{{ asset(config('client.logo')) }}" alt="Logo"></div>
-        <div class="school-title">PANITIA PENERIMAAN SISWA BARU (PSB)</div>
+        <div class="school-title">PANITIA PENERIMAAN SISWA BARU (SPMB)</div>
         <div class="school-name">{{ $peserta->fakultas ?: config('client.name') }}</div>
         <div class="address">{{ config('client.region') }}</div>
     </div>
@@ -38,7 +38,7 @@
     <div class="doc-sub">Hasil Seleksi Penerimaan Siswa Baru</div>
 
     <p class="body-text">
-        Panitia PSB {{ $peserta->fakultas ?: config('client.name') }} dengan ini menerangkan bahwa:
+        Panitia SPMB {{ $peserta->fakultas ?: config('client.name') }} dengan ini menerangkan bahwa:
     </p>
 
     <table class="info-table">
@@ -56,15 +56,15 @@
 
     <p class="body-text">
         @if($status === 'lulus')
-            Yang bersangkutan dinyatakan lulus seleksi PSB dan dapat melanjutkan proses registrasi / daftar ulang sesuai ketentuan panitia.
+            Yang bersangkutan dinyatakan lulus seleksi SPMB dan dapat melanjutkan proses registrasi / daftar ulang sesuai ketentuan panitia.
         @else
-            Yang bersangkutan dinyatakan tidak lulus seleksi PSB pada periode ini. Keputusan panitia bersifat mutlak.
+            Yang bersangkutan dinyatakan tidak lulus seleksi SPMB pada periode ini. Keputusan panitia bersifat mutlak.
         @endif
     </p>
 
     <div class="signature">
         <div>{{ config('client.city') }}, {{ $tanggalSekarang }}</div>
-        <div>Panitia PSB</div>
+        <div>Panitia SPMB</div>
         <div class="signature-space"></div>
         <div><strong>Ketua Panitia</strong></div>
     </div>

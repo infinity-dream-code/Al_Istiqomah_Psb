@@ -11,6 +11,10 @@ return [
     'region' => env('CLIENT_REGION', 'Kab. Kuningan, Prov. Jawa Barat'),
     'logo' => env('CLIENT_LOGO', 'istiqomah.png'),
 
+    // Label program di redaksi publik/cetakan (bukan nama teknis/route).
+    'program' => env('CLIENT_PROGRAM', 'SPMB'),
+    'program_long' => env('CLIENT_PROGRAM_LONG', 'Seleksi Penerimaan Murid Baru'),
+
     // Nomor VA = prefix + nomor pendaftaran (10 digit) = 16 digit.
     'va_prefix' => env('CLIENT_VA_PREFIX', '797777'),
 ];

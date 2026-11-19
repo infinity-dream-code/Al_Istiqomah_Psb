@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="bg-white p-6 shadow rounded-lg">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Report PSB - All</h1>
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">Report SPMB - All</h1>
 
     <div class="flex justify-between items-center mb-6">
         <form method="GET" action="{{ url()->current() }}" class="flex flex-wrap gap-3">

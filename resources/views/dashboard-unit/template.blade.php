@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSB {{ config('client.name') }}</title>
+    <title>SPMB {{ config('client.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -158,7 +158,7 @@
                         <button class="menu-item w-full flex items-center justify-between px-6 py-3 text-white font-medium dropdown-toggle hover:bg-green-700 transition-colors" data-target="setting-dropdown" data-menu="setting">
                             <div class="flex items-center">
                                 <i class="fas fa-cogs mr-3 w-4 text-center"></i>
-                                <span class="text-sm font-semibold">SETTING PSB</span>
+                                <span class="text-sm font-semibold">SETTING SPMB</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs transition-transform dropdown-arrow"></i>
                         </button>

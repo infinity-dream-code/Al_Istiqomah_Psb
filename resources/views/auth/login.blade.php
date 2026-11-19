@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>PSB {{ config('client.name') }}</title>
+  <title>SPMB {{ config('client.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -140,7 +140,7 @@
           </div>
         @endif
 
-        <h1 class="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-2 form-title">PSB {{ config('client.name') }}</h1>
+        <h1 class="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-2 form-title">SPMB {{ config('client.name') }}</h1>
         <p class="text-center text-gray-500 mb-1 text-sm">{{ config('client.region') }}</p>
         <p class="text-center text-gray-400 mb-8 text-sm font-medium tracking-wider">FORM LOGIN</p>
 

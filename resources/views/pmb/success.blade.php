@@ -45,7 +45,12 @@
 </p>
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
+                <a id="btn-download-info"
+                   href="{{ route('cetak.info.enroll', [$peserta->nama_peserta, $peserta->no_pendaftaran, $peserta->jalur]) }}?download=1"
+                   class="px-6 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700">
+                    Download Info
+                </a>
                 <button onclick="window.print()" class="px-6 py-2 rounded-lg bg-green-700 text-white font-semibold hover:bg-green-800">
                     Cetak Info ini
                 </button>
@@ -56,6 +61,7 @@
                     Home
                 </a>
             </div>
+            <p class="text-sm text-gray-500">File info pendaftaran akan terunduh otomatis. Jika belum, klik tombol Download Info.</p>
         </div>
     </div>
 
@@ -68,8 +74,8 @@
             <div>
                 <h3 class="text-lg font-semibold mb-2">Ketentuan</h3>
                 <ul class="list-disc ml-6 text-gray-700 space-y-2">
-                    <li>Nomor virtual akun di atas adalah nomor rekening virtual di bank Muamalat Indonesia bagi pendaftar yang digunakan untuk melakukan pembayaran biaya Pendaftaran PSB {{ config('client.name') }}.</li>
-                    <li>Nomor virtual account juga digunakan untuk pembayaran sekolah bagi calon mahasiswa yang dinyatakan DITERIMA seleksi masuk di PSB {{ config('client.name') }}, maka mohon dicatat dan diingat-ingat nomor tersebut.</li>
+                    <li>Nomor virtual akun di atas adalah nomor rekening virtual di bank Muamalat Indonesia bagi pendaftar yang digunakan untuk melakukan pembayaran biaya Pendaftaran SPMB {{ config('client.name') }}.</li>
+                    <li>Nomor virtual account juga digunakan untuk pembayaran sekolah bagi calon mahasiswa yang dinyatakan DITERIMA seleksi masuk di SPMB {{ config('client.name') }}, maka mohon dicatat dan diingat-ingat nomor tersebut.</li>
                    <li>
     Petunjuk pembayaran dapat anda lihat di HOME PAGE 
     <a href="{{ url('/') }}" class="text-blue-600 underline" target="_blank">
@@ -116,5 +122,18 @@
     </div>
 </div>
 
+<script>
+(function () {
+    var link = document.getElementById('btn-download-info');
+    if (!link) return;
+    // Auto-download info pendaftar sekali saat halaman sukses dibuka.
+    setTimeout(function () {
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = link.href;
+        document.body.appendChild(iframe);
+    }, 600);
+})();
+</script>
 </body>
 </html>

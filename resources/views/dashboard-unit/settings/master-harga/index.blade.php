@@ -3,7 +3,7 @@
 @section('content')
 <div id="master-harga" class="tab-content opacity-100 p-4">
     <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-gray-700">Master Harga PSB</h3>
+        <h3 class="text-xl font-bold text-gray-700">Master Harga SPMB</h3>
     </div>
 
     <div class="overflow-x-auto bg-white rounded-lg shadow">

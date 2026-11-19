@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PSB {{ config('client.name') }} - Penerimaan Siswa Baru 2025/2026</title>
+    <title>SPMB {{ config('client.name') }} - Penerimaan Siswa Baru 2025/2026</title>
     <link rel="icon" type="image/png" href="{{ asset(config('client.logo')) }}">
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -45,7 +45,7 @@
                 <a href="{{ url('/') }}" class="no-underline flex items-center gap-3">
                     <img src="{{ asset(config('client.logo')) }}" alt="Logo {{ config('client.name') }}" class="h-12 w-12 object-contain">
                     <div class="leading-tight">
-                        <div class="text-2xl md:text-3xl font-bold text-pmb-green-700">PSB {{ config('client.name') }}</div>
+                        <div class="text-2xl md:text-3xl font-bold text-pmb-green-700">SPMB {{ config('client.name') }}</div>
                         <div class="text-xs text-gray-500">{{ config('client.region') }}</div>
                     </div>
                 </a>
@@ -338,7 +338,7 @@
       <section class="bg-pmb-green-700 py-24">
     <div class="max-w-6xl mx-auto px-6 text-center">
         <!-- Header -->
-        <div class="text-yellow-400 font-semibold mb-8 text-lg">Kenapa harus PSB {{ config('client.name') }}?</div>
+        <div class="text-yellow-400 font-semibold mb-8 text-lg">Kenapa harus SPMB {{ config('client.name') }}?</div>
         
         <!-- Visi Section -->
         <h2 class="text-5xl font-bold text-white mb-8">Visi</h2>
@@ -480,7 +480,7 @@
     <p class="pb-2 fw-bold fs-6 mt-3">Pembayaran melalui Payment Point / Teller Bank Muamalat:</p>
     <ol class="ps-3">
         <li class="mb-2">Tunjukkan Nomor Pendaftaran / Virtual Akun (VA) Anda ke teller</li>
-        <li class="mb-2">Isi form pembayaran (jumlah nominal pembayaran sesuai dengan informasi dari sistem PSB Online)</li>
+        <li class="mb-2">Isi form pembayaran (jumlah nominal pembayaran sesuai dengan informasi dari sistem SPMB Online)</li>
         <li class="mb-2">Simpan bukti struk sebagai bukti pembayaran yang sah</li>
     </ol>
 
@@ -541,12 +541,12 @@
     <p class="pb-3 fw-bold fs-5">Syarat Daftar Ulang</p>
     <ol class="ps-3">
         <li class="mb-2">
-            Lulus tes seleksi dibuktikan dengan Surat Keputusan Panitia PSB
+            Lulus tes seleksi dibuktikan dengan Surat Keputusan Panitia SPMB
         </li>
         <li class="mb-2">
             Membawa berkas sebagai berikut :
             <ol type="a" class="ps-3 mt-2">
-                <li class="mb-1">Surat Keterangan Lulus dari Panitia PSB</li>
+                <li class="mb-1">Surat Keterangan Lulus dari Panitia SPMB</li>
                 <li class="mb-1">Scan KTP/KK</li>
                 <li class="mb-1">Scan Ijazah SMA/SMK/MA beserta Transkrip Nilai</li>
             </ol>

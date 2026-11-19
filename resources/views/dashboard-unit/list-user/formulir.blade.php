@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Formulir PSB {{ $peserta->fakultas ?? '-' }}</title>
+    <title>Cetak Formulir SPMB {{ $peserta->fakultas ?? '-' }}</title>
      <style>
         body {
             font-family: Arial, sans-serif;
@@ -384,7 +384,7 @@
             <div class="logo"></div>
             <div class="school-info">
                 <div class="school-title">PENERIMAAN SISWA BARU</div>
-                <div class="school-year">PSB {{ $peserta->fakultas ?? '-' }} {{ $peserta->gelombang ?? '-' }}</div>
+                <div class="school-year">SPMB {{ $peserta->fakultas ?? '-' }} {{ $peserta->gelombang ?? '-' }}</div>
             </div>
         </div>
         <div class="section cost-section">

@@ -45,7 +45,7 @@
     <td style="border:none; text-align:left; padding-top:5px; padding-left:20px;">
         <div style="font-size:20px; font-weight:bold;">PENERIMAAN SISWA BARU</div>
         <div style="font-size:15px; font-weight:bold;">
-            PSB {{ $peserta->fakultas }} {{ $peserta->relasiGelombang->tahun_akademik ?? '-' }}<br>
+            SPMB {{ $peserta->fakultas }} {{ $peserta->relasiGelombang->tahun_akademik ?? '-' }}<br>
             No. Pendaftaran {{ $peserta->no_pendaftaran }}
         </div>
     </td>
@@ -132,7 +132,7 @@
     </tbody>
 </table>
 
-        <div class="footer" style="margin-top:20px;">PANITIA PSB</div>
+        <div class="footer" style="margin-top:20px;">PANITIA SPMB</div>
     </div>
     @if($index < count($pesertaList)-1)
         <div style="page-break-after: always;"></div>
