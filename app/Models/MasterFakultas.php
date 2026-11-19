@@ -10,6 +10,8 @@ class MasterFakultas extends Model
     use HasFactory;
     use Concerns\UsesSikeuConnection;
 
+    protected $connection = 'sikeu';
+
     protected $table = 'master_fakultas';
 
     protected $fillable = ['fakultas','aktif'];

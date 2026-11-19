@@ -10,6 +10,8 @@ class MasterJalur extends Model
     use HasFactory;
     use Concerns\UsesSikeuConnection;
 
+    protected $connection = 'sikeu';
+
     protected $table = 'master_jalur';
 
     protected $fillable = ['nama', 'is_active', 'is_free'];

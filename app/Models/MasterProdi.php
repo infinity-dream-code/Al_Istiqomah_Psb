@@ -10,6 +10,8 @@ class MasterProdi extends Model
     use HasFactory;
     use Concerns\UsesSikeuConnection;
 
+    protected $connection = 'sikeu';
+
     protected $table = 'master_prodi';
 
     protected $fillable = ['id_fakultas','nama'];

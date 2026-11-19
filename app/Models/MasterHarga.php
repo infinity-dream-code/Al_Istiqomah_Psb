@@ -8,6 +8,8 @@ class MasterHarga extends Model
 {
     use Concerns\UsesSikeuConnection;
 
+    protected $connection = 'sikeu';
+
     protected $table = 'master_harga';
 
     protected $fillable = [
