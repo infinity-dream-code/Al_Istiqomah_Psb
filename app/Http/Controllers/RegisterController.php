@@ -151,10 +151,30 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
 
     $passwordPlain = $peserta->user->plain_password;
 
+    $detailTagihan = [];
+    if ($peserta->masterHarga && is_array($peserta->masterHarga->detail) && count($peserta->masterHarga->detail) > 0) {
+        $detailTagihan = collect($peserta->masterHarga->detail)->map(function ($d) {
+            return [
+                'nama_tagihan' => $d['nama_tagihan'] ?? 'Biaya Pendaftaran',
+                'kode_tagihan' => $d['no_akun'] ?? 'ACC_SPMB_DAFTAR',
+                'nominal' => (float) ($d['biaya'] ?? 0),
+            ];
+        })->filter(fn ($d) => $d['nominal'] > 0)->values()->all();
+    }
+
+    if ($detailTagihan === []) {
+        $detailTagihan = [[
+            'nama_tagihan' => 'Biaya Pendaftaran',
+            'kode_tagihan' => 'ACC_SPMB_DAFTAR',
+            'nominal' => (float) ($peserta->masterHarga->harga_final ?? 0),
+        ]];
+    }
+
    $payload = [
     "siswa" => [
         "nama_siswa" => $peserta->nama_peserta,
         "nomor_pendaftaran" => $peserta->no_pendaftaran,
+        "va_number" => $peserta->va_number,
         "id_sekolah" => null,
         "yayasan" => null,
         "unit" =>  $peserta->fakultas,
@@ -168,13 +188,7 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
         "periode" => date('Ym'), 
         "nama_tagihan" => "TAGIHAN_PENDAFTARAN",
        "tahun_akademik" => $peserta->relasiGelombang?->tahun_akademik,
-        "detail_tagihan" => [
-            [
-                "nama_tagihan" => "Biaya Pendaftaran",
-                "kode_tagihan" => "499",
-                "nominal" => $peserta->masterHarga->harga_final
-            ]
-        ]
+        "detail_tagihan" => $detailTagihan,
     ]
 ];
 

@@ -30,18 +30,47 @@ final class AkunService
 
     public function findIdByKode(string $kode): int
     {
-        $stmt = $this->pdo->prepare(
-            "SELECT id FROM akun_penerimaan
-             WHERE kode_akun = :kode AND status = 'active'
-             LIMIT 1"
-        );
-        $stmt->execute([':kode' => $kode]);
-        $id = $stmt->fetchColumn();
-
-        if (!$id) {
-            JsonResponse::error(422, "Akun penerimaan '{$kode}' tidak ditemukan / nonaktif. Tambahkan di akun_penerimaan.");
+        $kode = trim($kode);
+        if ($kode !== '') {
+            $stmt = $this->pdo->prepare(
+                "SELECT id FROM akun_penerimaan
+                 WHERE kode_akun = :kode AND status = 'active'
+                 LIMIT 1"
+            );
+            $stmt->execute([':kode' => $kode]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
         }
 
-        return (int) $id;
+        // Fallback SPMB: akun Biaya Pendaftaran (auto-create bila belum ada).
+        return $this->ensurePendaftaranAkunId();
+    }
+
+    /** Pastikan ada akun khusus biaya pendaftaran SPMB. */
+    public function ensurePendaftaranAkunId(): int
+    {
+        foreach (['ACC_SPMB_DAFTAR', '499', 'Biaya Pendaftaran'] as $key) {
+            $stmt = $this->pdo->prepare(
+                "SELECT id FROM akun_penerimaan
+                 WHERE (kode_akun = :k OR nama_akun = :k2) AND status = 'active'
+                 LIMIT 1"
+            );
+            $stmt->execute([':k' => $key, ':k2' => $key]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
+        }
+
+        $ins = $this->pdo->prepare(
+            "INSERT INTO akun_penerimaan
+             (kode_akun, nama_akun, jenis, unit_id, keterangan, status, created_at, updated_at)
+             VALUES ('ACC_SPMB_DAFTAR', 'Biaya Pendaftaran', 'pendapatan', NULL, 'Auto dari WS SPMB', 'active', NOW(), NOW())"
+        );
+        $ins->execute();
+
+        return (int) $this->pdo->lastInsertId();
     }
 }
