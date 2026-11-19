@@ -46,16 +46,10 @@ final class SiswaService
             JsonResponse::error(422, "Siswa dengan nomor pendaftaran {$nomor} sudah ada.");
         }
 
-        // nis wajib unik di SIKEU; untuk calon SPMB pakai nomor pendaftaran.
-        $cekNis = $this->pdo->prepare('SELECT id FROM siswa WHERE nis = :nis LIMIT 1');
-        $cekNis->execute([':nis' => $nomor]);
-        if ($cekNis->fetchColumn()) {
-            JsonResponse::error(422, "NIS/nomor pendaftaran {$nomor} sudah dipakai.");
-        }
-
         $unitId = $this->lookup->resolveUnitId($siswa['unit'] ?? null);
         $kelasId = $this->lookup->resolveKelasId($siswa['kelas'] ?? null, $unitId);
         $tahunAjaranId = $this->lookup->resolveTahunAjaranId($siswa['tahun_akademik'] ?? null);
+        $jenisSiswaId = $this->lookup->resolveJenisSiswaId($siswa['jenis_siswa'] ?? $siswa['jalur'] ?? 'Reguler');
 
         $jk = strtoupper(trim((string) ($siswa['jenis_kelamin'] ?? 'L')));
         if (!in_array($jk, ['L', 'P'], true)) {
@@ -65,20 +59,20 @@ final class SiswaService
         $va = trim((string) ($siswa['va_number'] ?? ''));
         $va = $va !== '' ? $va : null;
 
+        // Calon SPMB: NIS dikosongkan (NULL). Identitas sementara = nomor_pendaftaran + va_number.
         $stmt = $this->pdo->prepare(
             "INSERT INTO siswa (
                 nis, nomor_pendaftaran, va_number, is_calon_spmb,
                 nama_lengkap, jenis_kelamin, alamat, no_hp,
-                kelas_id, unit_id, tahun_ajaran_id, status, created_at, updated_at
+                kelas_id, jenis_siswa_id, unit_id, tahun_ajaran_id, status, created_at, updated_at
              ) VALUES (
-                :nis, :nomor, :va, 1,
+                NULL, :nomor, :va, 1,
                 :nama, :jk, :alamat, :hp,
-                :kelas_id, :unit_id, :tahun_ajaran_id, 'active', NOW(), NOW()
+                :kelas_id, :jenis_siswa_id, :unit_id, :tahun_ajaran_id, 'active', NOW(), NOW()
              )"
         );
 
         $stmt->execute([
-            ':nis' => $nomor,
             ':nomor' => $nomor,
             ':va' => $va,
             ':nama' => trim((string) ($siswa['nama_siswa'] ?? '')),
@@ -86,6 +80,7 @@ final class SiswaService
             ':alamat' => trim((string) ($siswa['alamat_rumah'] ?? '')) ?: null,
             ':hp' => trim((string) ($siswa['no_hp'] ?? '')) ?: null,
             ':kelas_id' => $kelasId,
+            ':jenis_siswa_id' => $jenisSiswaId,
             ':unit_id' => $unitId,
             ':tahun_ajaran_id' => $tahunAjaranId,
         ]);

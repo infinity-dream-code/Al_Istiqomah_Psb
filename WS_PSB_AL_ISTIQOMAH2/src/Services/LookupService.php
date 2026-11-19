@@ -82,6 +82,35 @@ final class LookupService
         return $id ? (int) $id : null;
     }
 
+    /** Default jenis siswa SPMB = Reguler (fallback nama/kode). */
+    public function resolveJenisSiswaId(?string $namaAtauKode = null): ?int
+    {
+        $key = trim((string) $namaAtauKode);
+        if ($key !== '') {
+            $stmt = $this->pdo->prepare(
+                "SELECT id FROM jenis_siswa
+                 WHERE status = 'active' AND (nama_jenis = :k OR kode_jenis = :k)
+                 LIMIT 1"
+            );
+            $stmt->execute([':k' => $key]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id FROM jenis_siswa
+             WHERE status = 'active' AND (nama_jenis = 'Reguler' OR kode_jenis = 'JNS001')
+             ORDER BY id ASC
+             LIMIT 1"
+        );
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+
+        return $id ? (int) $id : null;
+    }
+
     public function resolveKelasId(?string $kelasName, ?int $unitId): ?int
     {
         $kelasName = trim((string) $kelasName);
