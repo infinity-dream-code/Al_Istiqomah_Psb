@@ -15,6 +15,7 @@ class MasterGelombang extends Model
         'tahun',
         'gelombang',
         'tahun_akademik',
+        'angkatan_sis_id', // SIKEU.angkatansis = tahun angkatan
         'start',
         'end',
         'pengumuman',
@@ -44,8 +45,16 @@ class MasterGelombang extends Model
     }
 
     public function akademik()
-{
-    return $this->belongsTo(MasterAkademik::class, 'tahun_akademik_id');
-}
+    {
+        return $this->belongsTo(MasterAkademik::class, 'tahun_akademik_id');
+    }
 
+    /**
+     * Tahun angkatan SIKEU (DB 56). Relasi logical via angkatan_sis_id.
+     * Di siswa: angkatan_sis_id = angkatan, angkatan_id = gelombang.
+     */
+    public function angkatanSis()
+    {
+        return $this->belongsTo(Angkatansis::class, 'angkatan_sis_id');
+    }
 }

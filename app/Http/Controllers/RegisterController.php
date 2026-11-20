@@ -184,6 +184,9 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
         "id_kelas" => null,
         "jenjang" => null,
         "tahun_akademik" => $peserta->relasiGelombang?->tahun_akademik,
+        // SIKEU: angkatan_id = gelombang, angkatan_sis_id = tahun angkatan
+        "gelombang" => $peserta->relasiGelombang?->gelombang,
+        "angkatan_sis_id" => $peserta->relasiGelombang?->angkatan_sis_id,
         "alamat_rumah" => $peserta->alamat_lengkap ?? "-"
     ],
     "tagihan" => [

@@ -111,6 +111,91 @@ final class LookupService
         return $id ? (int) $id : null;
     }
 
+    /**
+     * siswa.angkatan_id = gelombang SIKEU (tabel `angkatan`, mis. "Gelombang 2").
+     */
+    public function resolveAngkatanId(mixed $gelombang): ?int
+    {
+        if (is_numeric($gelombang) && (int) $gelombang > 0) {
+            $no = (int) $gelombang;
+            $nama = 'Gelombang ' . $no;
+
+            $stmt = $this->pdo->prepare(
+                "SELECT id FROM angkatan WHERE nama_angkatan = :nama LIMIT 1"
+            );
+            $stmt->execute([':nama' => $nama]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
+
+            $ins = $this->pdo->prepare(
+                "INSERT INTO angkatan (nama_angkatan, tahun, created_at, updated_at)
+                 VALUES (:nama, :tahun, NOW(), NOW())"
+            );
+            $ins->execute([
+                ':nama' => $nama,
+                ':tahun' => (int) date('Y'),
+            ]);
+
+            return (int) $this->pdo->lastInsertId();
+        }
+
+        $nama = trim((string) $gelombang);
+        if ($nama === '') {
+            return null;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id FROM angkatan WHERE nama_angkatan = :nama LIMIT 1"
+        );
+        $stmt->execute([':nama' => $nama]);
+        $id = $stmt->fetchColumn();
+
+        return $id ? (int) $id : null;
+    }
+
+    /**
+     * siswa.angkatan_sis_id = tahun angkatan SIKEU (tabel `angkatansis`).
+     */
+    public function resolveAngkatanSisId(mixed $angkatanSisId, ?string $tahunAkademik = null): ?int
+    {
+        if (is_numeric($angkatanSisId) && (int) $angkatanSisId > 0) {
+            $stmt = $this->pdo->prepare('SELECT id FROM angkatansis WHERE id = :id LIMIT 1');
+            $stmt->execute([':id' => (int) $angkatanSisId]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
+        }
+
+        $ta = trim((string) $tahunAkademik);
+        if ($ta === '') {
+            return null;
+        }
+
+        $exact = $this->pdo->prepare(
+            "SELECT id FROM angkatansis WHERE nama_angkatan = :nama LIMIT 1"
+        );
+        $exact->execute([':nama' => $ta]);
+        $id = $exact->fetchColumn();
+        if ($id) {
+            return (int) $id;
+        }
+
+        $prefix = preg_replace('/\s*-\s*(GANJIL|GENAP).*$/i', '', $ta) ?: $ta;
+        $like = $this->pdo->prepare(
+            "SELECT id FROM angkatansis
+             WHERE nama_angkatan LIKE :nama
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+        $like->execute([':nama' => $prefix . '%']);
+        $id = $like->fetchColumn();
+
+        return $id ? (int) $id : null;
+    }
+
     public function resolveKelasId(?string $kelasName, ?int $unitId): ?int
     {
         $kelasName = trim((string) $kelasName);

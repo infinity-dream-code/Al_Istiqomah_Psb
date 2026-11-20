@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\MasterGelombang;
 use App\Models\MasterAkademik;
+use App\Models\Angkatansis;
 
 class MasterGelombangController extends Controller
 {
     public function index()
     {
-        $gelombang = MasterGelombang::with('akademik')->paginate(10);
+        $gelombang = MasterGelombang::with(['akademik', 'angkatanSis'])->paginate(10);
         return view('dashboard.master-data.gelombang.index', compact('gelombang'));
     }
 
@@ -22,16 +23,18 @@ class MasterGelombangController extends Controller
     public function create()
     {
         $akademik = MasterAkademik::all();
-        return view('dashboard.master-data.gelombang.create', compact('akademik'));
+        $angkatansis = Angkatansis::orderByDesc('tahun')->orderBy('nama_angkatan')->get();
+        return view('dashboard.master-data.gelombang.create', compact('akademik', 'angkatansis'));
     }
 
 public function store(Request $request)
 {
     $request->validate([
-        'tahun_akademik' => 'required|string',
-        'start'          => 'required|date',
-        'end'            => 'required|date|after_or_equal:start',
-        'pengumuman'     => 'required|date|after_or_equal:end',
+        'tahun_akademik'  => 'required|string',
+        'angkatan_sis_id' => 'nullable|integer',
+        'start'           => 'required|date',
+        'end'             => 'required|date|after_or_equal:start',
+        'pengumuman'      => 'required|date|after_or_equal:end',
     ]);
 
     $tahun = date('Y', strtotime($request->start));
@@ -46,13 +49,14 @@ public function store(Request $request)
     }
 
     MasterGelombang::create([
-        'tahun'          => $tahun,
-        'gelombang'      => $next,
-        'tahun_akademik' => $request->tahun_akademik,
-        'start'          => $request->start,
-        'end'            => $request->end,
-        'pengumuman'     => $request->pengumuman,
-        'is_active'      => 1,
+        'tahun'           => $tahun,
+        'gelombang'       => $next,
+        'tahun_akademik'  => $request->tahun_akademik,
+        'angkatan_sis_id' => $request->angkatan_sis_id ?: null,
+        'start'           => $request->start,
+        'end'             => $request->end,
+        'pengumuman'      => $request->pengumuman,
+        'is_active'       => 1,
     ]);
 
     return redirect()->route('master.gelombang')
@@ -63,23 +67,26 @@ public function store(Request $request)
 public function edit($id)
 {
     $gelombang = MasterGelombang::findOrFail($id);
-    return view('dashboard.master-data.gelombang.edit', compact('gelombang'));
+    $angkatansis = Angkatansis::orderByDesc('tahun')->orderBy('nama_angkatan')->get();
+    return view('dashboard.master-data.gelombang.edit', compact('gelombang', 'angkatansis'));
 }
 
 public function update(Request $request, $id)
 {
     $request->validate([
-        'start'      => 'required|date',
-        'end'        => 'required|date|after_or_equal:start',
-        'pengumuman' => 'required|date|after_or_equal:end',
+        'angkatan_sis_id' => 'nullable|integer',
+        'start'           => 'required|date',
+        'end'             => 'required|date|after_or_equal:start',
+        'pengumuman'      => 'required|date|after_or_equal:end',
     ]);
 
     $gelombang = MasterGelombang::findOrFail($id);
 
     $gelombang->update([
-        'start'      => $request->start,
-        'end'        => $request->end,
-        'pengumuman' => $request->pengumuman,
+        'angkatan_sis_id' => $request->angkatan_sis_id ?: null,
+        'start'           => $request->start,
+        'end'             => $request->end,
+        'pengumuman'      => $request->pengumuman,
     ]);
 
     return redirect()->route('master.gelombang')

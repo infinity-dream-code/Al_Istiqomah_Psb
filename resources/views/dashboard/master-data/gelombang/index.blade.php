@@ -39,6 +39,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">No</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Gelombang</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Tahun Akademik</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Tahun Angkatan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Start</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">End</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Pengumuman</th>
@@ -53,6 +54,7 @@
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ $item->gelombang }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ $item->tahun_akademik }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ $item->angkatanSis?->nama_angkatan ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ \Carbon\Carbon::parse($item->start)->format('d-m-Y') }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ \Carbon\Carbon::parse($item->end)->format('d-m-Y') }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ \Carbon\Carbon::parse($item->pengumuman)->format('d-m-Y') }}</td>

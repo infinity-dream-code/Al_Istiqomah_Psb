@@ -15,6 +15,19 @@
         </div>
 
         <div class="mb-4">
+            <label for="angkatan_sis_id" class="block text-sm font-medium text-gray-700 mb-2">Tahun Angkatan (SIKEU)</label>
+            <select name="angkatan_sis_id" id="angkatan_sis_id"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="">-- Pilih Tahun Angkatan --</option>
+                @foreach ($angkatansis as $a)
+                    <option value="{{ $a->id }}" {{ (string) old('angkatan_sis_id', $gelombang->angkatan_sis_id) === (string) $a->id ? 'selected' : '' }}>
+                        {{ $a->nama_angkatan }} ({{ $a->tahun }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
             <input type="date" name="start" value="{{ old('start', $gelombang->start->format('Y-m-d')) }}"
                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">

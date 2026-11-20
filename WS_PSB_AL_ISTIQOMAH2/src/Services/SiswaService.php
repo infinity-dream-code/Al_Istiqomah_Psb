@@ -50,6 +50,12 @@ final class SiswaService
         $kelasId = $this->lookup->resolveKelasId($siswa['kelas'] ?? null, $unitId);
         $tahunAjaranId = $this->lookup->resolveTahunAjaranId($siswa['tahun_akademik'] ?? null);
         $jenisSiswaId = $this->lookup->resolveJenisSiswaId($siswa['jenis_siswa'] ?? $siswa['jalur'] ?? 'Reguler');
+        // Mapping SIKEU: angkatan_id = gelombang, angkatan_sis_id = tahun angkatan.
+        $angkatanId = $this->lookup->resolveAngkatanId($siswa['gelombang'] ?? $siswa['angkatan_id'] ?? null);
+        $angkatanSisId = $this->lookup->resolveAngkatanSisId(
+            $siswa['angkatan_sis_id'] ?? null,
+            $siswa['tahun_akademik'] ?? null
+        );
 
         $jk = strtoupper(trim((string) ($siswa['jenis_kelamin'] ?? 'L')));
         if (!in_array($jk, ['L', 'P'], true)) {
@@ -64,11 +70,13 @@ final class SiswaService
             "INSERT INTO siswa (
                 nis, nomor_pendaftaran, va_number, is_calon_spmb,
                 nama_lengkap, jenis_kelamin, alamat, no_hp,
-                kelas_id, jenis_siswa_id, unit_id, tahun_ajaran_id, status, created_at, updated_at
+                kelas_id, jenis_siswa_id, angkatan_id, angkatan_sis_id,
+                unit_id, tahun_ajaran_id, status, created_at, updated_at
              ) VALUES (
                 NULL, :nomor, :va, 1,
                 :nama, :jk, :alamat, :hp,
-                :kelas_id, :jenis_siswa_id, :unit_id, :tahun_ajaran_id, 'active', NOW(), NOW()
+                :kelas_id, :jenis_siswa_id, :angkatan_id, :angkatan_sis_id,
+                :unit_id, :tahun_ajaran_id, 'active', NOW(), NOW()
              )"
         );
 
@@ -81,6 +89,8 @@ final class SiswaService
             ':hp' => trim((string) ($siswa['no_hp'] ?? '')) ?: null,
             ':kelas_id' => $kelasId,
             ':jenis_siswa_id' => $jenisSiswaId,
+            ':angkatan_id' => $angkatanId,
+            ':angkatan_sis_id' => $angkatanSisId,
             ':unit_id' => $unitId,
             ':tahun_ajaran_id' => $tahunAjaranId,
         ]);
