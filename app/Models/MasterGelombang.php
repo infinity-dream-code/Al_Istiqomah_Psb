@@ -8,9 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class MasterGelombang extends Model
 {
     use HasFactory;
-    use Concerns\UsesSikeuConnection;
-
-    protected $connection = 'sikeu';
 
     protected $table = 'master_gelombang';
 

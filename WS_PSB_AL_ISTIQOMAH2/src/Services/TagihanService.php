@@ -57,6 +57,11 @@ final class TagihanService
             $namaDetail = trim((string) ($detail['nama_tagihan'] ?? $namaHeader));
             $kode = $this->generateKodeTagihan();
 
+            $jenisTagihan = strtolower(trim((string) ($detail['jenis_tagihan'] ?? $tagihan['jenis_tagihan'] ?? 'cicil')));
+            if (!in_array($jenisTagihan, ['cicil', 'lunas'], true)) {
+                $jenisTagihan = 'cicil';
+            }
+
             $stmt = $this->pdo->prepare(
                 "INSERT INTO tagihan (
                     kode_tagihan, siswa_id, tahun_ajaran_id, akun_penerimaan_id,
@@ -64,7 +69,7 @@ final class TagihanService
                     periode_tahun, periode_bulan, status, keterangan, created_at, updated_at
                  ) VALUES (
                     :kode, :siswa_id, :tahun_ajaran_id, :akun_id,
-                    'lunas', :nama, :jumlah, 0, :sisa,
+                    :jenis, :nama, :jumlah, 0, :sisa,
                     :periode_tahun, :periode_bulan, 'belum_lunas', :ket, NOW(), NOW()
                  )"
             );
@@ -74,6 +79,7 @@ final class TagihanService
                 ':siswa_id' => (int) $siswaRow['id'],
                 ':tahun_ajaran_id' => $tahunAjaranId,
                 ':akun_id' => $akunId,
+                ':jenis' => $jenisTagihan,
                 ':nama' => $namaHeader !== '' ? $namaHeader : $namaDetail,
                 ':jumlah' => $nominal,
                 ':sisa' => $nominal,

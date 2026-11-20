@@ -1,6 +1,6 @@
--- Master SPMB di DB 56 (al_istiqomah_sikeu)
--- Tabel: master_jalur, master_gelombang, master_fakultas, master_prodi, master_harga
--- App Laravel baca lewat connection `sikeu` (DB_SIKEU_* di .env)
+-- [ARSIP / TIDAK DIPAKAI APP]
+-- Master SPMB (jalur/gelombang/fakultas/prodi/harga) tetap di DB 43 (al_istiqomah_psb).
+-- DB 56 hanya untuk transaksi SIKEU: siswa, tagihan, saldo, akun, dll.
 
 -- master_harga berisi:
 --   harga / harga_final     = biaya pendaftaran

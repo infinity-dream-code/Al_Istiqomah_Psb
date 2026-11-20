@@ -17,7 +17,7 @@ return [
 
     'default' => env('DB_CONNECTION', 'mysql'),
 
-    // Master SPMB (jalur/gelombang/sekolah/harga) + SIKEU (siswa/tagihan) di DB 56.
+    // Opsional: akses SIKEU (siswa/tagihan) di DB 56. Master jalur/sekolah/harga tetap di DB default (43).
     'sikeu_connection' => env('DB_SIKEU_CONNECTION', 'sikeu'),
 
     /*
