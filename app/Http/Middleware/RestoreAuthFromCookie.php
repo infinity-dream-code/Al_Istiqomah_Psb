@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ParentAccount;
 use App\Models\User;
 use App\Support\AppIdentity;
+use Illuminate\Contracts\Auth\Authenticatable;
 use App\Support\AuthRedirect;
 use Closure;
 use Illuminate\Http\Request;
@@ -176,19 +178,19 @@ class RestoreAuthFromCookie
         );
     }
 
-    private static function loginFromCookie(Request $request, User $user, string $reason): void
+    private static function loginFromCookie(Request $request, Authenticatable $user, string $reason): void
     {
-        Auth::login($user, false);
-
+        $role = (string) ($user->role ?? 'peserta');
         if ($request->hasSession()) {
-            // Pastikan login langsung tertulis — cegah request berikutnya masih kosong.
-            $request->session()->put('auth_backup_uid', (int) $user->id);
-            $request->session()->put('auth_backup_role', (string) $user->role);
+            $request->session()->put('auth_backup_uid', (int) $user->getAuthIdentifier());
+            $request->session()->put('auth_backup_role', $role);
         }
 
+        Auth::login($user, false);
+
         Log::info('auth.' . $reason . '_from_cookie', [
-            'user_id' => $user->id,
-            'role' => $user->role,
+            'user_id' => $user->getAuthIdentifier(),
+            'role' => $role,
             'path' => $request->path(),
         ]);
     }
@@ -204,11 +206,8 @@ class RestoreAuthFromCookie
             return;
         }
 
-        try {
-            $user = User::find($uid);
-        } catch (\Throwable $e) {
-            return;
-        }
+        $role = (string) $request->session()->get('auth_backup_role', '');
+        $user = self::resolveAccount($uid, $role);
 
         if (!$user || !self::userMatchesRoute($user, $requiredRole, $preferStaff)) {
             return;
@@ -216,8 +215,8 @@ class RestoreAuthFromCookie
 
         Auth::login($user, false);
         Log::info('auth.restored_from_session_backup', [
-            'user_id' => $user->id,
-            'role' => $user->role,
+            'user_id' => $user->getAuthIdentifier(),
+            'role' => $user->role ?? $role,
             'path' => $request->path(),
         ]);
     }
@@ -311,7 +310,7 @@ class RestoreAuthFromCookie
         return array_values(array_filter(array_map('strval', (array) $list)));
     }
 
-    private static function userMatchesRoute(?User $user, ?string $requiredRole, bool $preferStaff): bool
+    private static function userMatchesRoute(?Authenticatable $user, ?string $requiredRole, bool $preferStaff): bool
     {
         if (!$user) {
             return false;
@@ -328,16 +327,16 @@ class RestoreAuthFromCookie
         return true;
     }
 
-    private static function resolveCookieUser(Request $request, bool $preferStaff): ?User
+    private static function resolveCookieUser(Request $request, bool $preferStaff): ?Authenticatable
     {
         $primary = self::readUserFrom($request, self::cookieName());
         $staff = self::readUserFrom($request, self::staffCookieName());
 
         if ($preferStaff) {
-            if ($staff && $staff->role !== 'peserta') {
+            if ($staff && ($staff->role ?? '') !== 'peserta') {
                 return $staff;
             }
-            if ($primary && $primary->role !== 'peserta') {
+            if ($primary && ($primary->role ?? '') !== 'peserta') {
                 return $primary;
             }
 
@@ -347,15 +346,53 @@ class RestoreAuthFromCookie
         return $primary ?: $staff;
     }
 
-    private static function readUserFrom(Request $request, string $cookieName): ?User
+    private static function readUserFrom(Request $request, string $cookieName): ?Authenticatable
     {
-        $userId = self::readUserId($request, $cookieName);
-        if (!$userId) {
+        $raw = $request->cookies->get($cookieName);
+        if (!$raw || !is_string($raw)) {
             return null;
         }
 
+        $data = self::parseCookieValue($raw);
+        if (!is_array($data) || empty($data['id']) || empty($data['exp'])) {
+            return null;
+        }
+
+        if (empty($data['app']) || !hash_equals(AppIdentity::fingerprint(), (string) $data['app'])) {
+            return null;
+        }
+
+        if ((int) $data['exp'] < time()) {
+            return null;
+        }
+
+        return self::resolveAccount((int) $data['id'], (string) ($data['role'] ?? ''));
+    }
+
+    private static function resolveAccount(int $id, string $role = ''): ?Authenticatable
+    {
+        if ($role === 'peserta') {
+            return ParentAccount::find($id);
+        }
+
+        if ($role !== '' && $role !== 'peserta') {
+            try {
+                $user = User::find($id);
+                if ($user) {
+                    return $user;
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
+        $parent = ParentAccount::find($id);
+        if ($parent) {
+            return $parent;
+        }
+
         try {
-            return User::find($userId);
+            return User::find($id);
         } catch (\Throwable $e) {
             return null;
         }

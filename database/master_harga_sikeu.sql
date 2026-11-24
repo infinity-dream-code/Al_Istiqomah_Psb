@@ -1,7 +1,6 @@
--- [ARSIP / TIDAK DIPAKAI APP]
--- Master SPMB (jalur/gelombang/fakultas/prodi/harga) tetap di DB 43 (al_istiqomah_psb).
--- DB 56 hanya untuk transaksi SIKEU: siswa, tagihan, saldo, akun, dll.
-
+-- Target: DB 56 (al_istiqomah_sikeu) — semua master SPMB + transaksi SIKEU satu database.
+-- Tabel: master_jalur, master_gelombang, master_fakultas, master_prodi, master_harga
+--
 -- master_harga berisi:
 --   harga / harga_final     = biaya pendaftaran
 --   harga_registrasi        = total daftar ulang

@@ -61,14 +61,10 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            // Peserta → parents; admin → user (kalau tabel ada)
+            'driver' => 'spmb',
+            'model' => App\Models\ParentAccount::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*

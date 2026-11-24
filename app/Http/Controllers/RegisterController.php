@@ -21,7 +21,6 @@ use App\Models\MasterPenghasilanOrtu;
 use App\Models\MasterPekerjaanOrtu;
 use App\Models\MasterSumberInformasi;
 use App\Models\DataPeserta;
-use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -61,12 +60,16 @@ class RegisterController extends Controller
    $noDaftar = DataPeserta::generateNoPendaftaran($request->id_gelombang);
     $password = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
-    $user = User::create([
-        'nama'           => $request->nama,
-        'username'       => $noDaftar,
+    // Akun login = parents (bukan tabel user). Username login = no_pendaftaran (disimpan di no_wa).
+    $parentNama = trim((string) ($request->nama_ayah ?: $request->nama_ibu ?: $request->nama));
+    $parent = \App\Models\ParentAccount::create([
+        'no_wa'          => $noDaftar,
         'password'       => Hash::make($password),
         'plain_password' => $password,
-        'role'           => 'peserta',
+        'nama_lengkap'   => $parentNama !== '' ? $parentNama : $request->nama,
+        'email'          => $request->email ?: null,
+        'alamat'         => $request->alamat ?: null,
+        'status'         => 'active',
     ]);
 
     $vaNumber = config('client.va_prefix') . $noDaftar;
@@ -85,7 +88,7 @@ class RegisterController extends Controller
     $penghasilanAyah = MasterPenghasilanOrtu::find($request->penghasilan_ayah);
 
     $peserta = DataPeserta::create([
-        'id_user'          => $user->id,
+        'id_user'          => $parent->id,
         'no_pendaftaran'   => $noDaftar,
         'nama_peserta'     => $request->nama,
         'tempat_lahir'     => $request->tempat_lahir,
@@ -146,10 +149,12 @@ public function success($token)
     }
 
 $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
-    ->with(['user', 'masterHarga', 'gelombang'])
+    ->with(['parentAccount', 'masterHarga', 'gelombang'])
     ->firstOrFail();
 
-    $passwordPlain = $peserta->user->plain_password;
+    $passwordPlain = session('password_plain')
+        ?? $peserta->parentAccount?->plain_password
+        ?? $peserta->user?->plain_password;
 
     $detailTagihan = [];
     if ($peserta->masterHarga && is_array($peserta->masterHarga->detail) && count($peserta->masterHarga->detail) > 0) {
@@ -183,10 +188,14 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
         "kelas" => $peserta->prodi,
         "id_kelas" => null,
         "jenjang" => null,
+        // SIKEU: angkatan_id = gelombang, angkatan_sis_id = tahun angkatan (ID dari DB 56)
         "tahun_akademik" => $peserta->relasiGelombang?->tahun_akademik,
-        // SIKEU: angkatan_id = gelombang, angkatan_sis_id = tahun angkatan
         "gelombang" => $peserta->relasiGelombang?->gelombang,
+        "angkatan_id" => $peserta->relasiGelombang?->angkatan_id,
         "angkatan_sis_id" => $peserta->relasiGelombang?->angkatan_sis_id,
+        "parent_id" => $peserta->id_user,
+        "jenis_kelamin" => $peserta->gender,
+        "no_hp" => $peserta->ibu_no_tlp ?: $peserta->ayah_no_tlp,
         "alamat_rumah" => $peserta->alamat_lengkap ?? "-"
     ],
     "tagihan" => [
@@ -344,7 +353,7 @@ public function cekStatus(Request $request)
                     ]);
 
                 if ($updated) {
-                    \DB::table('tagihan')
+                    \DB::table('tagihan_daful')
                         ->where('id_peserta', $peserta->id)
                         ->update([
                             'status' => 1,
@@ -411,7 +420,7 @@ public function cekStatus1(Request $request)
                     ]);
 
                 if ($updated) {
-                    \DB::table('tagihan')
+                    \DB::table('tagihan_daful')
                         ->where('id_peserta', $peserta->id)
                         ->update([
                             'status' => 1,

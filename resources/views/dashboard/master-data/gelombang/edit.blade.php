@@ -9,19 +9,45 @@
         @method('PUT')
 
         <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Akademik</label>
-            <input type="text" value="{{ $gelombang->tahun_akademik }}" 
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100" disabled>
+            <label for="angkatan_id" class="block text-sm font-medium text-gray-700 mb-2">Gelombang (SIKEU)</label>
+            <select name="angkatan_id" id="angkatan_id"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                <option value="">-- Pilih Gelombang dari DB 56 --</option>
+                @foreach ($sikeuAngkatan as $a)
+                    <option value="{{ $a->id }}" {{ (string) old('angkatan_id', $gelombang->angkatan_id) === (string) $a->id ? 'selected' : '' }}>
+                        {{ $a->nama_angkatan }} ({{ $a->tahun }})
+                    </option>
+                @endforeach
+            </select>
+            @error('angkatan_id')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <div class="mb-4">
             <label for="angkatan_sis_id" class="block text-sm font-medium text-gray-700 mb-2">Tahun Angkatan (SIKEU)</label>
             <select name="angkatan_sis_id" id="angkatan_sis_id"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                <option value="">-- Pilih Tahun Angkatan --</option>
-                @foreach ($angkatansis as $a)
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                <option value="">-- Pilih Tahun Angkatan dari DB 56 --</option>
+                @foreach ($sikeuAngkatansis as $a)
                     <option value="{{ $a->id }}" {{ (string) old('angkatan_sis_id', $gelombang->angkatan_sis_id) === (string) $a->id ? 'selected' : '' }}>
                         {{ $a->nama_angkatan }} ({{ $a->tahun }})
+                    </option>
+                @endforeach
+            </select>
+            @error('angkatan_sis_id')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mb-4">
+            <label for="tahun_akademik" class="block text-sm font-medium text-gray-700 mb-2">Label Tahun Akademik (opsional)</label>
+            <select name="tahun_akademik" id="tahun_akademik"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="">-- Ikuti nama tahun angkatan SIKEU --</option>
+                @foreach ($akademik as $a)
+                    <option value="{{ $a->tahun_akademik }}" {{ old('tahun_akademik', $gelombang->tahun_akademik) == $a->tahun_akademik ? 'selected' : '' }}>
+                        {{ $a->tahun_akademik }}
                     </option>
                 @endforeach
             </select>
@@ -46,11 +72,11 @@
         </div>
 
         <div class="flex justify-end">
-            <a href="{{ route('master.gelombang') }}" 
+            <a href="{{ route('master.gelombang') }}"
                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm mr-2">
                 Batal
             </a>
-            <button type="submit" 
+            <button type="submit"
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
                 Update
             </button>

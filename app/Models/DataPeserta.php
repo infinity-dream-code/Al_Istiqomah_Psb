@@ -121,9 +121,15 @@ class DataPeserta extends Model
     $gelombangCode = $gelombang - 1;
     $prefix = '9' . $tahun . $gelombangCode;
 
-    $last = \App\Models\User::where('username', 'like', $prefix . '%')
-        ->orderBy('username', 'desc')
-        ->value('username');
+    $last = static::where('no_pendaftaran', 'like', $prefix . '%')
+        ->orderBy('no_pendaftaran', 'desc')
+        ->value('no_pendaftaran');
+
+    if (!$last) {
+        $last = \App\Models\ParentAccount::where('no_wa', 'like', $prefix . '%')
+            ->orderBy('no_wa', 'desc')
+            ->value('no_wa');
+    }
 
     $increment = $last ? intval(substr($last, strlen($prefix))) + 1 : 1;
     $incrementStr = str_pad($increment, 6, '0', STR_PAD_LEFT);
@@ -163,7 +169,13 @@ public function tagihan()
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user');
+        // Kompat: id_user sekarang menyimpan parents.id untuk peserta SPMB.
+        return $this->belongsTo(ParentAccount::class, 'id_user');
+    }
+
+    public function parentAccount()
+    {
+        return $this->belongsTo(ParentAccount::class, 'id_user');
     }
 
     public function sumberInformasi()

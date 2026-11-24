@@ -29,7 +29,7 @@ public function store(Request $request)
 {
 
     $request->validate([
-        'id_fakultas' => 'required|exists:master_fakultas,id',
+        'id_fakultas' => 'required|exists:unit_sekolah,id',
         'nama' => 'required|string|max:255',
     ]);
 
@@ -55,7 +55,7 @@ public function store(Request $request)
     $prodi = MasterProdi::findOrFail($id);
 
     $request->validate([
-        'id_fakultas' => 'required|exists:master_fakultas,id', 
+        'id_fakultas' => 'required|exists:unit_sekolah,id', 
         'nama' => 'required|string|max:255',
     ]);
 
@@ -164,7 +164,7 @@ public function index1(Request $request)
     public function store1(Request $request, $role)
     {
         $request->validate([
-            'id_fakultas' => 'required|exists:master_fakultas,id',
+            'id_fakultas' => 'required|exists:unit_sekolah,id',
             'nama' => 'required|string|max:255',
         ]);
 
@@ -217,7 +217,7 @@ public function index1(Request $request)
         $prodi = MasterProdi::findOrFail($id);
 
         $request->validate([
-            'id_fakultas' => 'required|exists:master_fakultas,id',
+            'id_fakultas' => 'required|exists:unit_sekolah,id',
             'nama' => 'required|string|max:255',
         ]);
 

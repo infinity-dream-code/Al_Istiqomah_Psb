@@ -70,12 +70,12 @@ class MasterHargaController extends Controller
     
 public function create(Request $request)
 {
-    $jalurs = MasterJalur::where('is_active', 1)->orderBy('nama')->get();
+    $jalurs = MasterJalur::active()->orderBy('nama_jenis')->get();
     $gelombangs = MasterGelombang::whereDate('end', '>=', Carbon::today())
         ->orderBy('tahun')
         ->orderBy('gelombang')
         ->get();
-    $fakultas = MasterFakultas::where('aktif', 1)->orderBy('fakultas')->get();
+    $fakultas = MasterFakultas::aktif()->orderBy('nama_unit')->get();
 
     [$akuns, $akunWarning] = $this->fetchAkunList();
 
@@ -131,9 +131,10 @@ public function edit($id)
 {
     $masterHarga = MasterHarga::findOrFail($id);
 
-    $jalurs = MasterJalur::where('is_active', 1)
-        ->orWhere('id', $masterHarga->id_jalur)
-        ->orderBy('nama')
+    $jalurs = MasterJalur::where(function ($q) use ($masterHarga) {
+            $q->where('status', 'active')->orWhere('id', $masterHarga->id_jalur);
+        })
+        ->orderBy('nama_jenis')
         ->get();
 
     $today = now()->toDateString();
@@ -143,9 +144,10 @@ public function edit($id)
         ->orderBy('gelombang')
         ->get();
 
-    $fakultas = MasterFakultas::where('aktif', 1)
-        ->orWhere('id', $masterHarga->id_fakultas)
-        ->orderBy('fakultas')
+    $fakultas = MasterFakultas::where(function ($q) use ($masterHarga) {
+            $q->where('status', 'active')->orWhere('id', $masterHarga->id_fakultas);
+        })
+        ->orderBy('nama_unit')
         ->get();
 
     [$akuns, $akunWarning] = $this->fetchAkunList();
@@ -240,6 +242,8 @@ public function update(Request $request, $id)
         'id_gelombang' => $gelombang->id,
         'id_fakultas' => $fakultas->id,
         'id_prodi' => $prodi->id,
+        'jenis_siswa_id' => $jalur->id,
+        'unit_id' => $fakultas->id,
         'harga_final' => $hargaFinal,
         'harga_registrasi' => $hargaRegistrasi,
         'detail' => $detail,
@@ -287,9 +291,10 @@ public function edit1($role, $id)
 
     $masterHarga = MasterHarga::findOrFail($id);
 
-    $jalurs = MasterJalur::where('is_active', 1)
-        ->orWhere('id', $masterHarga->id_jalur)
-        ->orderBy('nama')
+    $jalurs = MasterJalur::where(function ($q) use ($masterHarga) {
+            $q->where('status', 'active')->orWhere('id', $masterHarga->id_jalur);
+        })
+        ->orderBy('nama_jenis')
         ->get();
 
     $today = now()->toDateString();
@@ -299,9 +304,10 @@ public function edit1($role, $id)
         ->orderBy('gelombang')
         ->get();
 
-    $fakultas = MasterFakultas::where('aktif', 1)
-        ->orWhere('id', $masterHarga->id_fakultas)
-        ->orderBy('fakultas')
+    $fakultas = MasterFakultas::where(function ($q) use ($masterHarga) {
+            $q->where('status', 'active')->orWhere('id', $masterHarga->id_fakultas);
+        })
+        ->orderBy('nama_unit')
         ->get();
 
     [$akuns, $akunWarning] = $this->fetchAkunList();
@@ -390,6 +396,8 @@ public function update1(Request $request, $role, $id)
         'id_gelombang' => $gelombang->id,
         'id_fakultas' => $fakultas->id,
         'id_prodi' => $prodi->id,
+        'jenis_siswa_id' => $jalur->id,
+        'unit_id' => $fakultas->id,
         'harga_final' => $hargaFinal,
         'harga_registrasi' => $hargaRegistrasi,
         'detail' => $detail,
@@ -527,6 +535,8 @@ public function store(Request $request)
             'nama_gelombang' => $gelombang->gelombang,
             'nama_fakultas' => $fakultas->fakultas,
             'nama_prodi' => $prodi->nama,
+            'jenis_siswa_id' => $jalur->id,
+            'unit_id' => $fakultas->id,
             'active' => 1,
         ]
     );

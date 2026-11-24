@@ -111,11 +111,32 @@ final class LookupService
         return $id ? (int) $id : null;
     }
 
+    /** Ambil angkatan by primary key (ID dari dropdown SPMB). */
+    public function resolveAngkatanIdById(int $id): ?int
+    {
+        if ($id <= 0) {
+            return null;
+        }
+        $stmt = $this->pdo->prepare('SELECT id FROM angkatan WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $id]);
+        $found = $stmt->fetchColumn();
+
+        return $found ? (int) $found : null;
+    }
+
     /**
      * siswa.angkatan_id = gelombang SIKEU (tabel `angkatan`, mis. "Gelombang 2").
      */
     public function resolveAngkatanId(mixed $gelombang): ?int
     {
+        if (is_numeric($gelombang) && (int) $gelombang > 100) {
+            // Nilai besar kemungkinan sudah ID langsung.
+            $byId = $this->resolveAngkatanIdById((int) $gelombang);
+            if ($byId) {
+                return $byId;
+            }
+        }
+
         if (is_numeric($gelombang) && (int) $gelombang > 0) {
             $no = (int) $gelombang;
             $nama = 'Gelombang ' . $no;

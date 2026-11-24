@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Models\ParentAccount;
 use App\Models\DataPeserta;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Str;
 use App\Models\MasterRole;
@@ -103,9 +106,7 @@ class LoginController extends Controller
 
     private function attemptLogin(Request $request, array $credentials)
     {
-        $user = User::where('username', $credentials['username'])
-            ->where('plain_password', $credentials['password'])
-            ->first();
+        $user = $this->resolveLoginAccount($credentials['username'], $credentials['password']);
 
         if (!$user) {
             Log::warning('login.failed', [
@@ -118,11 +119,12 @@ class LoginController extends Controller
                 ->with('login_error', 'Username atau password salah.');
         }
 
+        $role = (string) ($user->role ?? 'peserta');
         $redirectTo = $this->resolveRedirectPath($user);
         if ($redirectTo === null) {
             Log::warning('login.unknown_role', [
-                'user_id' => $user->id,
-                'role' => $user->role,
+                'user_id' => $user->getAuthIdentifier(),
+                'role' => $role,
             ]);
 
             return back()
@@ -130,8 +132,8 @@ class LoginController extends Controller
                 ->with('login_error', 'Akun Anda belum dapat digunakan. Silakan hubungi admin.');
         }
 
-        if ($user->role === 'peserta') {
-            $peserta = DataPeserta::where('id_user', $user->id)->first();
+        if ($role === 'peserta') {
+            $peserta = DataPeserta::where('id_user', $user->getAuthIdentifier())->first();
 
             if ($peserta) {
                 $this->syncStatusBayar($peserta);
@@ -143,7 +145,7 @@ class LoginController extends Controller
                     $link = url("PmbMstPendaftarans/success_enroll/{$token}");
 
                     Log::info('login.need_payment', [
-                        'user_id' => $user->id,
+                        'user_id' => $user->getAuthIdentifier(),
                         'no_pendaftaran' => $peserta->no_pendaftaran,
                     ]);
 
@@ -155,25 +157,28 @@ class LoginController extends Controller
             }
         }
 
-        // remember=false: tabel user tidak punya kolom remember_token
+        // Set role dulu supaya SpmbUserProvider bisa resolve ulang dari session.
+        $request->session()->put('auth_backup_uid', (int) $user->getAuthIdentifier());
+        $request->session()->put('auth_backup_role', $role);
         Auth::login($user, false);
         $request->session()->regenerate();
-        $request->session()->put('auth_backup_uid', (int) $user->id);
-        $request->session()->put('auth_backup_role', (string) $user->role);
+        $request->session()->put('auth_backup_uid', (int) $user->getAuthIdentifier());
+        $request->session()->put('auth_backup_role', $role);
 
         // Cookie cadangan: session file kadang kosong saat klik menu
-        cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeCookie((int) $user->id, (string) $user->role));
-        if ($user->role !== 'peserta') {
-            cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeStaffCookie((int) $user->id, (string) $user->role));
+        $uid = (int) $user->getAuthIdentifier();
+        cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeCookie($uid, $role));
+        if ($role !== 'peserta') {
+            cookie()->queue(\App\Http\Middleware\RestoreAuthFromCookie::makeStaffCookie($uid, $role));
         }
 
         $intendedRaw = $request->session()->get('url.intended');
         $target = $this->resolvePostLoginRedirect($request, $redirectTo);
 
         Log::info('login.success', [
-            'user_id' => $user->id,
-            'username' => $user->username,
-            'role' => $user->role,
+            'user_id' => $uid,
+            'username' => $user->username ?? null,
+            'role' => $role,
             'auth_check' => Auth::check(),
             'session_id' => $request->session()->getId(),
             'url_intended_raw' => $intendedRaw,
@@ -245,19 +250,50 @@ class LoginController extends Controller
         return $next;
     }
 
-    private function resolveRedirectPath(User $user): ?string
+    private function resolveLoginAccount(string $username, string $password): ?Authenticatable
     {
-        if ($user->role === 'admin') {
+        $parent = ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
+        if ($parent) {
+            if (!empty($parent->plain_password) && hash_equals((string) $parent->plain_password, $password)) {
+                return $parent;
+            }
+            if (Hash::check($password, (string) $parent->password)) {
+                return $parent;
+            }
+        }
+
+        try {
+            $user = User::where('username', $username)->first();
+            if ($user) {
+                if (!empty($user->plain_password) && hash_equals((string) $user->plain_password, $password)) {
+                    return $user;
+                }
+                if (Hash::check($password, (string) $user->password)) {
+                    return $user;
+                }
+            }
+        } catch (\Throwable $e) {
+            // tabel user belum ada
+        }
+
+        return null;
+    }
+
+    private function resolveRedirectPath(Authenticatable $user): ?string
+    {
+        $userRole = (string) ($user->role ?? '');
+
+        if ($userRole === 'admin') {
             return '/pages/display/home';
         }
 
-        if ($user->role === 'peserta') {
+        if ($userRole === 'peserta') {
             return '/pages/dashboard';
         }
 
-        $role = MasterRole::whereRaw('LOWER(nama_role) = ?', [strtolower((string) $user->role)])->first();
+        $role = MasterRole::whereRaw('LOWER(nama_role) = ?', [strtolower($userRole)])->first();
         if (!$role) {
-            $compact = strtolower(preg_replace('/[\s\-]+/', '', (string) $user->role));
+            $compact = strtolower(preg_replace('/[\s\-]+/', '', $userRole));
             $role = MasterRole::get()->first(function ($r) use ($compact) {
                 return strtolower(preg_replace('/[\s\-]+/', '', (string) $r->nama_role)) === $compact;
             });

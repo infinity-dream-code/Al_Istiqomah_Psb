@@ -116,7 +116,7 @@ public function update(Request $request, $id)
     $biaya = MasterFakultas::findOrFail($id);
 
     $data = $request->validate([
-        'fakultas' => 'required|string|max:150|unique:master_fakultas,fakultas,' . $biaya->id,
+        'fakultas' => 'required|string|max:150|unique:unit_sekolah,nama_unit,' . $biaya->id,
     ]);
 
     $data['aktif'] = 1;

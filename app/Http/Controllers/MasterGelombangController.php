@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\MasterGelombang;
 use App\Models\MasterAkademik;
-use App\Models\Angkatansis;
+use App\Models\SikeuAngkatan;
+use App\Models\SikeuAngkatansis;
 
 class MasterGelombangController extends Controller
 {
     public function index()
     {
-        $gelombang = MasterGelombang::with(['akademik', 'angkatanSis'])->paginate(10);
+        $gelombang = MasterGelombang::with(['akademik', 'sikeuAngkatan', 'sikeuAngkatansis'])->paginate(10);
         return view('dashboard.master-data.gelombang.index', compact('gelombang'));
     }
 
@@ -23,77 +24,138 @@ class MasterGelombangController extends Controller
     public function create()
     {
         $akademik = MasterAkademik::all();
-        $angkatansis = Angkatansis::orderByDesc('tahun')->orderBy('nama_angkatan')->get();
-        return view('dashboard.master-data.gelombang.create', compact('akademik', 'angkatansis'));
+        $sikeuAngkatan = SikeuAngkatan::orderBy('tahun')->orderBy('nama_angkatan')->get();
+        $sikeuAngkatansis = SikeuAngkatansis::orderByDesc('tahun')->orderBy('nama_angkatan')->get();
+
+        return view('dashboard.master-data.gelombang.create', compact(
+            'akademik',
+            'sikeuAngkatan',
+            'sikeuAngkatansis'
+        ));
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'tahun_akademik'  => 'required|string',
-        'angkatan_sis_id' => 'nullable|integer',
-        'start'           => 'required|date',
-        'end'             => 'required|date|after_or_equal:start',
-        'pengumuman'      => 'required|date|after_or_equal:end',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'angkatan_id'     => 'required|integer',
+            'angkatan_sis_id' => 'required|integer',
+            'tahun_akademik'  => 'nullable|string',
+            'start'           => 'required|date',
+            'end'             => 'required|date|after_or_equal:start',
+            'pengumuman'      => 'required|date|after_or_equal:end',
+        ]);
 
-    $tahun = date('Y', strtotime($request->start));
+        $angkatan = SikeuAngkatan::find($request->angkatan_id);
+        $angkatansis = SikeuAngkatansis::find($request->angkatan_sis_id);
 
-    $last = MasterGelombang::where('tahun', $tahun)->max('gelombang');
-    $next = $last ? $last + 1 : 1;
+        if (!$angkatan || !$angkatansis) {
+            return redirect()->back()->withErrors([
+                'angkatan_id' => 'Gelombang / tahun angkatan SIKEU tidak ditemukan. Pastikan data ada di DB 56.',
+            ])->withInput();
+        }
 
-    if ($next > 10) {
-        return redirect()->back()->withErrors([
-            'gelombang' => "Tahun {$tahun} sudah punya 10 gelombang, tidak bisa tambah lagi."
-        ])->withInput();
+        $gelombangNo = 1;
+        if (preg_match('/(\d+)/', (string) $angkatan->nama_angkatan, $m)) {
+            $gelombangNo = (int) $m[1];
+        }
+
+        $tahun = (int) ($angkatansis->tahun ?: date('Y', strtotime($request->start)));
+        $tahunAkademik = $request->tahun_akademik
+            ?: (string) $angkatansis->nama_angkatan;
+
+        if (MasterGelombang::where('angkatan_id', $angkatan->id)
+            ->where('angkatan_sis_id', $angkatansis->id)
+            ->exists()) {
+            return redirect()->back()->withErrors([
+                'angkatan_id' => 'Kombinasi gelombang & tahun angkatan ini sudah ada.',
+            ])->withInput();
+        }
+
+        MasterGelombang::create([
+            'tahun'           => $tahun,
+            'gelombang'       => $gelombangNo,
+            'tahun_akademik'  => $tahunAkademik,
+            'angkatan_id'     => $angkatan->id,
+            'angkatan_sis_id' => $angkatansis->id,
+            'start'           => $request->start,
+            'end'             => $request->end,
+            'pengumuman'      => $request->pengumuman,
+            'is_active'       => 1,
+        ]);
+
+        return redirect()->route('master.gelombang')
+            ->with('success', "Gelombang {$angkatan->nama_angkatan} / {$angkatansis->nama_angkatan} berhasil ditambahkan");
     }
 
-    MasterGelombang::create([
-        'tahun'           => $tahun,
-        'gelombang'       => $next,
-        'tahun_akademik'  => $request->tahun_akademik,
-        'angkatan_sis_id' => $request->angkatan_sis_id ?: null,
-        'start'           => $request->start,
-        'end'             => $request->end,
-        'pengumuman'      => $request->pengumuman,
-        'is_active'       => 1,
-    ]);
+    public function edit($id)
+    {
+        $gelombang = MasterGelombang::findOrFail($id);
+        $akademik = MasterAkademik::all();
+        $sikeuAngkatan = SikeuAngkatan::orderBy('tahun')->orderBy('nama_angkatan')->get();
+        $sikeuAngkatansis = SikeuAngkatansis::orderByDesc('tahun')->orderBy('nama_angkatan')->get();
 
-    return redirect()->route('master.gelombang')
-        ->with('success', "Gelombang ke-{$next} untuk tahun {$tahun} berhasil ditambahkan");
-}
+        return view('dashboard.master-data.gelombang.edit', compact(
+            'gelombang',
+            'akademik',
+            'sikeuAngkatan',
+            'sikeuAngkatansis'
+        ));
+    }
 
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'angkatan_id'     => 'required|integer',
+            'angkatan_sis_id' => 'required|integer',
+            'tahun_akademik'  => 'nullable|string',
+            'start'           => 'required|date',
+            'end'             => 'required|date|after_or_equal:start',
+            'pengumuman'      => 'required|date|after_or_equal:end',
+        ]);
 
-public function edit($id)
-{
-    $gelombang = MasterGelombang::findOrFail($id);
-    $angkatansis = Angkatansis::orderByDesc('tahun')->orderBy('nama_angkatan')->get();
-    return view('dashboard.master-data.gelombang.edit', compact('gelombang', 'angkatansis'));
-}
+        $gelombang = MasterGelombang::findOrFail($id);
+        $angkatan = SikeuAngkatan::find($request->angkatan_id);
+        $angkatansis = SikeuAngkatansis::find($request->angkatan_sis_id);
 
-public function update(Request $request, $id)
-{
-    $request->validate([
-        'angkatan_sis_id' => 'nullable|integer',
-        'start'           => 'required|date',
-        'end'             => 'required|date|after_or_equal:start',
-        'pengumuman'      => 'required|date|after_or_equal:end',
-    ]);
+        if (!$angkatan || !$angkatansis) {
+            return redirect()->back()->withErrors([
+                'angkatan_id' => 'Gelombang / tahun angkatan SIKEU tidak ditemukan. Pastikan data ada di DB 56.',
+            ])->withInput();
+        }
 
-    $gelombang = MasterGelombang::findOrFail($id);
+        $gelombangNo = 1;
+        if (preg_match('/(\d+)/', (string) $angkatan->nama_angkatan, $m)) {
+            $gelombangNo = (int) $m[1];
+        }
 
-    $gelombang->update([
-        'angkatan_sis_id' => $request->angkatan_sis_id ?: null,
-        'start'           => $request->start,
-        'end'             => $request->end,
-        'pengumuman'      => $request->pengumuman,
-    ]);
+        $tahun = (int) ($angkatansis->tahun ?: $gelombang->tahun);
+        $tahunAkademik = $request->tahun_akademik
+            ?: (string) $angkatansis->nama_angkatan;
 
-    return redirect()->route('master.gelombang')
-        ->with('success', "Gelombang ke-{$gelombang->gelombang} berhasil diperbarui");
-}
+        $dup = MasterGelombang::where('angkatan_id', $angkatan->id)
+            ->where('angkatan_sis_id', $angkatansis->id)
+            ->where('id', '!=', $gelombang->id)
+            ->exists();
+        if ($dup) {
+            return redirect()->back()->withErrors([
+                'angkatan_id' => 'Kombinasi gelombang & tahun angkatan ini sudah dipakai baris lain.',
+            ])->withInput();
+        }
 
+        $gelombang->update([
+            'tahun'           => $tahun,
+            'gelombang'       => $gelombangNo,
+            'tahun_akademik'  => $tahunAkademik,
+            'angkatan_id'     => $angkatan->id,
+            'angkatan_sis_id' => $angkatansis->id,
+            'start'           => $request->start,
+            'end'             => $request->end,
+            'pengumuman'      => $request->pengumuman,
+        ]);
 
+        return redirect()->route('master.gelombang')
+            ->with('success', "Gelombang ke-{$gelombang->gelombang} berhasil diperbarui");
+    }
 
     public function destroy($id)
     {

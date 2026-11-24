@@ -23,7 +23,7 @@ class MasterJalurController extends Controller
    public function store(Request $request)
 {
     $data = $request->validate([
-        'nama' => 'required|string|max:100|unique:master_jalur,nama',
+        'nama' => 'required|string|max:100|unique:jenis_siswa,nama_jenis',
     ]);
 
     $data['is_active'] = $request->has('is_active');
@@ -46,7 +46,7 @@ class MasterJalurController extends Controller
         $masterJalur = MasterJalur::findOrFail($id);
 
         $data = $request->validate([
-            'nama' => 'required|string|max:100|unique:master_jalur,nama,' . $id,
+            'nama' => 'required|string|max:100|unique:jenis_siswa,nama_jenis,' . $id,
         ]);
 
         $data['is_active'] = $request->boolean('is_active');

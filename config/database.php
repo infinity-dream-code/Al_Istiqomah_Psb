@@ -17,7 +17,7 @@ return [
 
     'default' => env('DB_CONNECTION', 'mysql'),
 
-    // Opsional: akses SIKEU (siswa/tagihan) di DB 56. Master jalur/sekolah/harga tetap di DB default (43).
+    // Alias ke DB 56. Setelah cutover, default DB_* juga mengarah ke al_istiqomah_sikeu.
     'sikeu_connection' => env('DB_SIKEU_CONNECTION', 'sikeu'),
 
     /*
@@ -49,10 +49,11 @@ return [
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
+            // Default cutover: SPMB + SIKEU satu DB di 56
+            'host' => env('DB_HOST', '101.50.2.56'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
+            'database' => env('DB_DATABASE', 'al_istiqomah_sikeu'),
+            'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',

@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tagihan extends Model
 {
-    protected $table = 'tagihan';
+    /** SPMB daftar-ulang (bukan SIKEU.tagihan keuangan). */
+    protected $table = 'tagihan_daful';
 
     protected $fillable = [
         'id_peserta',

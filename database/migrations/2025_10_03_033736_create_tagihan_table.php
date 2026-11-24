@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tagihan', function (Blueprint $table) {
+        // Nama tagihan_daful agar tidak bentrok dengan SIKEU.tagihan di DB 56.
+        Schema::create('tagihan_daful', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_peserta')->nullable();
             $table->decimal('biaya_daful', 15, 2)->nullable();
@@ -21,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tagihan');
+        Schema::dropIfExists('tagihan_daful');
     }
 };
