@@ -32,13 +32,13 @@
 
             <div>
                 <p class="text-gray-600 font-semibold">Akun Login Anda</p>
-                <p class="text-lg font-bold">Username : {{ $peserta->no_pendaftaran }}</p>
-                <p class="text-lg font-bold">Password : {{ $peserta->user->plain_password }}</p>
+                <p class="text-lg font-bold">Username (No. WA) : {{ $peserta->parentAccount?->no_wa ?? $peserta->no_hp ?? $peserta->user?->username }}</p>
+                <p class="text-lg font-bold">Password : {{ $passwordPlain ?? $peserta->parentAccount?->plain_password ?? $peserta->user?->plain_password }}</p>
             </div>
 
             <div class="border-t pt-4">
                 <p class="text-sm text-red-600 font-medium">
-    NB: Simpanlah informasi penting ini. Gunakan Username dan Password untuk login pada alamat
+    NB: Simpanlah informasi penting ini. Gunakan No. WhatsApp utama dan Password untuk login pada alamat
     <a href="{{ url('ServiceLogin') }}" class="text-blue-600 underline" target="_blank">
         {{ parse_url(url('/'), PHP_URL_HOST) }}/ServiceLogin
     </a>

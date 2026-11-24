@@ -148,12 +148,13 @@
           @csrf
           <input type="hidden" name="next" value="{{ $next ?? '' }}">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">No. WhatsApp</label>
             <input
               type="text"
               name="username"
               value="{{ old('username') }}"
               required
+              placeholder="Nomor WA utama (ayah/ibu)"
               class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-600 input-focus input-field">
           </div>
 

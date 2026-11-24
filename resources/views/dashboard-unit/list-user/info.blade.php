@@ -59,7 +59,8 @@
             <div class="section-title">Informasi Akun Anda</div>
             <table class="info-table">
                 <tr><td class="label">Nama Calon Siswa</td><td class="value">{{ $peserta->nama_peserta }}</td></tr>
-                <tr><td class="label">Nomor pendaftaran (Username)</td><td class="value">{{ $peserta->no_pendaftaran }}</td></tr>
+                <tr><td class="label">Nomor pendaftaran</td><td class="value">{{ $peserta->no_pendaftaran }}</td></tr>
+                <tr><td class="label">Username (No. WA)</td><td class="value">{{ $user->no_wa ?? $user->username ?? $peserta->no_hp }}</td></tr>
                 <tr><td class="label">Password</td><td class="value">{{ $user->plain_password }}</td></tr>
                 <tr><td class="label">Virtual Akun</td><td class="value">{{ $peserta->va_number }}</td></tr>
                 <tr><td class="label">Sekolah</td><td class="value">{{ $peserta->fakultas ?? '-' }}</td></tr>
@@ -67,7 +68,7 @@
                 <tr><td class="label">Jenis Pendaftaran</td><td class="value">{{ $peserta->jalur ?? '-' }}</td></tr>
             </table>
             <div class="login-info">
-                Gunakan Nomor pendaftaran (Username) dan password untuk login pada URL di bawah ini<br>
+                Gunakan No. WhatsApp (Username) dan password untuk login pada URL di bawah ini<br>
                 <a href="{{ url('ServiceLogin') }}" class="no-underline text-pmb-green-600 hover:text-pmb-green-700" target="_blank">
     {{ parse_url(url('/'), PHP_URL_HOST) }}/ServiceLogin
 </a>

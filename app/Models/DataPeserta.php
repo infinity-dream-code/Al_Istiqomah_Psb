@@ -125,12 +125,6 @@ class DataPeserta extends Model
         ->orderBy('no_pendaftaran', 'desc')
         ->value('no_pendaftaran');
 
-    if (!$last) {
-        $last = \App\Models\ParentAccount::where('no_wa', 'like', $prefix . '%')
-            ->orderBy('no_wa', 'desc')
-            ->value('no_wa');
-    }
-
     $increment = $last ? intval(substr($last, strlen($prefix))) + 1 : 1;
     $incrementStr = str_pad($increment, 6, '0', STR_PAD_LEFT);
 

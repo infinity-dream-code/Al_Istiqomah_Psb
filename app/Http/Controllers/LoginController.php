@@ -252,7 +252,10 @@ class LoginController extends Controller
 
     private function resolveLoginAccount(string $username, string $password): ?Authenticatable
     {
-        $parent = ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
+        $wa = preg_replace('/\D+/', '', $username) ?: $username;
+
+        $parent = ParentAccount::where('no_wa', $wa)->where('status', 'active')->first()
+            ?? ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
         if ($parent) {
             if (!empty($parent->plain_password) && hash_equals((string) $parent->plain_password, $password)) {
                 return $parent;
@@ -263,7 +266,8 @@ class LoginController extends Controller
         }
 
         try {
-            $user = User::where('username', $username)->first();
+            $user = User::where('username', $username)->first()
+                ?? ($wa !== $username ? User::where('username', $wa)->first() : null);
             if ($user) {
                 if (!empty($user->plain_password) && hash_equals((string) $user->plain_password, $password)) {
                     return $user;

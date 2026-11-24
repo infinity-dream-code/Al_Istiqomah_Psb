@@ -291,6 +291,10 @@
                                     <div>
                                         <label class="block label-text mb-2">No. Telp/WA Ibu <span class="required">*</span></label>
                                         <input type="text" name="tlp_ibu" required placeholder="08xxxxxxxxxx" class="form-input">
+                                        <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                            <input type="radio" name="kontak_utama" value="ibu" class="text-green-600 focus:ring-green-500" required>
+                                            <span>Jadikan nomor utama (login &amp; WA)</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -323,6 +327,10 @@
                                     <div>
                                         <label class="block label-text mb-2">No. Telp/WA Ayah <span class="required">*</span></label>
                                         <input type="text" name="tlp_ayah" required placeholder="08xxxxxxxxxx" class="form-input">
+                                        <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                            <input type="radio" name="kontak_utama" value="ayah" class="text-green-600 focus:ring-green-500" checked>
+                                            <span>Jadikan nomor utama (login &amp; WA)</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>

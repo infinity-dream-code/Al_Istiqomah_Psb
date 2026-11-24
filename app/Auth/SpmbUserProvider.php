@@ -51,13 +51,17 @@ class SpmbUserProvider extends EloquentUserProvider
             return null;
         }
 
-        $parent = ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
+        $wa = preg_replace('/\D+/', '', (string) $username) ?: (string) $username;
+
+        $parent = ParentAccount::where('no_wa', $wa)->where('status', 'active')->first()
+            ?? ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
         if ($parent) {
             return $parent;
         }
 
         try {
-            return User::where('username', $username)->first();
+            return User::where('username', $username)->first()
+                ?? ($wa !== (string) $username ? User::where('username', $wa)->first() : null);
         } catch (\Throwable $e) {
             return null;
         }

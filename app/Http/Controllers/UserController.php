@@ -468,9 +468,12 @@ public function cetakInfoEnroll($nama, $no_pendaftaran, $jalur)
     $peserta = DataPeserta::where('no_pendaftaran', $no_pendaftaran)
         ->where('nama_peserta', $nama)
         ->where('jalur', $jalur)
+        ->with('parentAccount')
         ->firstOrFail();
 
-    $user = \App\Models\User::where('username', $peserta->no_pendaftaran)->first();
+    $user = $peserta->parentAccount
+        ?? \App\Models\ParentAccount::find($peserta->id_user)
+        ?? \App\Models\User::where('username', $peserta->no_pendaftaran)->first();
 
     $createdAt = \Carbon\Carbon::parse($peserta->created_at)->translatedFormat('d M, Y');
     $cetak = \Carbon\Carbon::now()->translatedFormat('d M, Y');

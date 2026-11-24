@@ -41,6 +41,11 @@ class RegisterController extends Controller
         'id_fakultas'       => 'required|integer',
         'asal_sekolah'      => 'nullable|string|max:150',
         'tahun_lulus'       => 'nullable|digits:4',
+        'tlp_ibu'           => 'required|string|max:20',
+        'tlp_ayah'          => 'required|string|max:20',
+        'kontak_utama'      => 'required|in:ayah,ibu',
+        'nama_ayah'         => 'required|string|max:100',
+        'nama_ibu'          => 'required|string|max:100',
     ]);
 
     // Jurusan tidak dipilih di form: harga diambil dari jalur + gelombang + sekolah.
@@ -57,20 +62,58 @@ class RegisterController extends Controller
             ->withErrors(['id_fakultas' => 'Biaya pendaftaran untuk jalur, gelombang, dan sekolah yang dipilih belum diatur. Silakan hubungi panitia.']);
     }
 
-   $noDaftar = DataPeserta::generateNoPendaftaran($request->id_gelombang);
+    $normalizeWa = static function (?string $raw): string {
+        $digits = preg_replace('/\D+/', '', (string) $raw);
+        return $digits ?? '';
+    };
+
+    $waIbu = $normalizeWa($request->tlp_ibu);
+    $waAyah = $normalizeWa($request->tlp_ayah);
+    $noWaUtama = $request->kontak_utama === 'ibu' ? $waIbu : $waAyah;
+
+    if ($noWaUtama === '' || strlen($noWaUtama) < 10) {
+        return back()
+            ->withInput()
+            ->withErrors(['kontak_utama' => 'Nomor WhatsApp utama tidak valid. Isi nomor ayah/ibu minimal 10 digit.']);
+    }
+
+    $noDaftar = DataPeserta::generateNoPendaftaran($request->id_gelombang);
     $password = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
-    // Akun login = parents (bukan tabel user). Username login = no_pendaftaran (disimpan di no_wa).
-    $parentNama = trim((string) ($request->nama_ayah ?: $request->nama_ibu ?: $request->nama));
-    $parent = \App\Models\ParentAccount::create([
-        'no_wa'          => $noDaftar,
-        'password'       => Hash::make($password),
-        'plain_password' => $password,
-        'nama_lengkap'   => $parentNama !== '' ? $parentNama : $request->nama,
-        'email'          => $request->email ?: null,
-        'alamat'         => $request->alamat ?: null,
-        'status'         => 'active',
-    ]);
+    // Akun login = parents. Username = no_wa (nomor utama ayah/ibu dari form).
+    $parentNama = $request->kontak_utama === 'ibu'
+        ? trim((string) $request->nama_ibu)
+        : trim((string) $request->nama_ayah);
+    if ($parentNama === '') {
+        $parentNama = trim((string) ($request->nama_ayah ?: $request->nama_ibu ?: $request->nama));
+    }
+
+    $existingParent = \App\Models\ParentAccount::where('no_wa', $noWaUtama)->first();
+    if ($existingParent) {
+        $parent = $existingParent;
+        if (!empty($parent->plain_password)) {
+            $password = $parent->plain_password;
+        } else {
+            $parent->password = Hash::make($password);
+            $parent->plain_password = $password;
+        }
+        if ($parent->status !== 'active') {
+            $parent->status = 'active';
+        }
+        if ($parent->isDirty()) {
+            $parent->save();
+        }
+    } else {
+        $parent = \App\Models\ParentAccount::create([
+            'no_wa'          => $noWaUtama,
+            'password'       => Hash::make($password),
+            'plain_password' => $password,
+            'nama_lengkap'   => $parentNama !== '' ? $parentNama : $request->nama,
+            'email'          => $request->email ?: null,
+            'alamat'         => $request->alamat ?: null,
+            'status'         => 'active',
+        ]);
+    }
 
     $vaNumber = config('client.va_prefix') . $noDaftar;
 
@@ -105,6 +148,7 @@ class RegisterController extends Controller
         'gender'           => $request->gender,
         'status_paid'      => 0,
         'va_number'        => $vaNumber,
+        'no_hp'            => $noWaUtama,
         'alamat_lengkap'   => $request->alamat,
         'dusun'            => $request->dusun,
         'id_provinsi'      => $request->provinsi_id,
@@ -120,13 +164,13 @@ class RegisterController extends Controller
         'ibu_pekerjaan'    => $pekerjaanIbu?->nama,
         'id_penghasilan_ibu'=> $request->penghasilan_ibu,
         'ibu_penghasilan'   => $penghasilanIbu?->nama,
-        'ibu_no_tlp'       => $request->tlp_ibu,
+        'ibu_no_tlp'       => $waIbu,
         'ayah_nama'        => $request->nama_ayah,
         'id_pekerjaan_ayah'=> $request->pekerjaan_ayah,
         'ayah_pekerjaan'   => $pekerjaanAyah?->nama,
         'id_penghasilan_ayah'=> $request->penghasilan_ayah,
         'ayah_penghasilan' => $penghasilanAyah?->nama,
-        'ayah_no_tlp'      => $request->tlp_ayah,
+        'ayah_no_tlp'      => $waAyah,
     ]);
 
     $jwtKey  = "53c2f9aace5478a11815c65fcdb1a3dc29b60c3e102489384e3c1701f4355fa4";
@@ -195,7 +239,9 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
         "angkatan_sis_id" => $peserta->relasiGelombang?->angkatan_sis_id,
         "parent_id" => $peserta->id_user,
         "jenis_kelamin" => $peserta->gender,
-        "no_hp" => $peserta->ibu_no_tlp ?: $peserta->ayah_no_tlp,
+        "no_hp" => $peserta->no_hp
+            ?: ($peserta->parentAccount?->no_wa)
+            ?: ($peserta->ayah_no_tlp ?: $peserta->ibu_no_tlp),
         "alamat_rumah" => $peserta->alamat_lengkap ?? "-"
     ],
     "tagihan" => [
