@@ -80,41 +80,7 @@ class RegisterController extends Controller
     $noDaftar = DataPeserta::generateNoPendaftaran($request->id_gelombang);
     $password = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
-    // Akun login = parents. Username = no_wa (nomor utama ayah/ibu dari form).
-    $parentNama = $request->kontak_utama === 'ibu'
-        ? trim((string) $request->nama_ibu)
-        : trim((string) $request->nama_ayah);
-    if ($parentNama === '') {
-        $parentNama = trim((string) ($request->nama_ayah ?: $request->nama_ibu ?: $request->nama));
-    }
-
-    $existingParent = \App\Models\ParentAccount::where('no_wa', $noWaUtama)->first();
-    if ($existingParent) {
-        $parent = $existingParent;
-        if (!empty($parent->plain_password)) {
-            $password = $parent->plain_password;
-        } else {
-            $parent->password = Hash::make($password);
-            $parent->plain_password = $password;
-        }
-        if ($parent->status !== 'active') {
-            $parent->status = 'active';
-        }
-        if ($parent->isDirty()) {
-            $parent->save();
-        }
-    } else {
-        $parent = \App\Models\ParentAccount::create([
-            'no_wa'          => $noWaUtama,
-            'password'       => Hash::make($password),
-            'plain_password' => $password,
-            'nama_lengkap'   => $parentNama !== '' ? $parentNama : $request->nama,
-            'email'          => $request->email ?: null,
-            'alamat'         => $request->alamat ?: null,
-            'status'         => 'active',
-        ]);
-    }
-
+    // Parents SIKEU baru dibuat saat lulus. Login SPMB pakai data_peserta (no_hp + password).
     $vaNumber = config('client.va_prefix') . $noDaftar;
 
     $gelombang = MasterGelombang::find($request->id_gelombang);
@@ -131,7 +97,7 @@ class RegisterController extends Controller
     $penghasilanAyah = MasterPenghasilanOrtu::find($request->penghasilan_ayah);
 
     $peserta = DataPeserta::create([
-        'id_user'          => $parent->id,
+        'id_user'          => null,
         'no_pendaftaran'   => $noDaftar,
         'nama_peserta'     => $request->nama,
         'tempat_lahir'     => $request->tempat_lahir,
@@ -149,6 +115,9 @@ class RegisterController extends Controller
         'status_paid'      => 0,
         'va_number'        => $vaNumber,
         'no_hp'            => $noWaUtama,
+        'password'         => Hash::make($password),
+        'plain_password'   => $password,
+        'kontak_utama'     => $request->kontak_utama,
         'alamat_lengkap'   => $request->alamat,
         'dusun'            => $request->dusun,
         'id_provinsi'      => $request->provinsi_id,
@@ -197,6 +166,7 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
     ->firstOrFail();
 
     $passwordPlain = session('password_plain')
+        ?? ($peserta->getAttributes()['plain_password'] ?? null)
         ?? $peserta->parentAccount?->plain_password
         ?? $peserta->user?->plain_password;
 
@@ -237,10 +207,9 @@ $peserta = DataPeserta::where('no_pendaftaran', $noDaftar)
         "gelombang" => $peserta->relasiGelombang?->gelombang,
         "angkatan_id" => $peserta->relasiGelombang?->angkatan_id,
         "angkatan_sis_id" => $peserta->relasiGelombang?->angkatan_sis_id,
-        "parent_id" => $peserta->id_user,
+        "parent_id" => null,
         "jenis_kelamin" => $peserta->gender,
         "no_hp" => $peserta->no_hp
-            ?: ($peserta->parentAccount?->no_wa)
             ?: ($peserta->ayah_no_tlp ?: $peserta->ibu_no_tlp),
         "alamat_rumah" => $peserta->alamat_lengkap ?? "-"
     ],

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use App\Services\KelulusanSiswaService;
 
 
 class UjianController extends Controller
@@ -76,6 +77,7 @@ public function setKelulusanPeserta1(Request $request, $status)
     }
 
     $ids = explode(',', $request->get('ids'));
+    $kelulusan = app(KelulusanSiswaService::class);
 
     if ($status === 'gagal') {
         DataPeserta::whereIn('id', $ids)->update([
@@ -86,7 +88,9 @@ public function setKelulusanPeserta1(Request $request, $status)
         ]);
 
         Tagihan::whereIn('id_peserta', $ids)->delete();
-    } 
+
+        DataPeserta::whereIn('id', $ids)->get()->each(fn (DataPeserta $p) => $kelulusan->markGagal($p));
+    }
     elseif ($status === 'lulus') {
         DataPeserta::whereIn('id', $ids)->update([
             'status_ujian' => 'lulus',
@@ -102,6 +106,8 @@ public function setKelulusanPeserta1(Request $request, $status)
         $payloadData = [];
 
         foreach ($pesertaList as $peserta) {
+            $kelulusan->markLulus($peserta);
+
             $detail = [];
             $biayaDaful = 0;
 
@@ -640,6 +646,7 @@ public function setKelulusanPeserta1(Request $request, $status)
 public function setKelulusanPeserta(Request $request, $status)
 {
     $ids = explode(',', $request->get('ids'));
+    $kelulusan = app(KelulusanSiswaService::class);
 
     if ($status === 'gagal') {
         DataPeserta::whereIn('id', $ids)->update([
@@ -650,7 +657,9 @@ public function setKelulusanPeserta(Request $request, $status)
         ]);
 
         Tagihan::whereIn('id_peserta', $ids)->delete();
-    } 
+
+        DataPeserta::whereIn('id', $ids)->get()->each(fn (DataPeserta $p) => $kelulusan->markGagal($p));
+    }
     elseif ($status === 'lulus') {
         DataPeserta::whereIn('id', $ids)->update([
             'status_ujian' => 'lulus',
@@ -666,6 +675,8 @@ public function setKelulusanPeserta(Request $request, $status)
         $payloadData = [];
 
         foreach ($pesertaList as $peserta) {
+            $kelulusan->markLulus($peserta);
+
             $detail = [];
             $biayaDaful = 0;
 

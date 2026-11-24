@@ -61,9 +61,9 @@ return [
 
     'providers' => [
         'users' => [
-            // Peserta → parents; admin → user (kalau tabel ada)
+            // Peserta → data_peserta; admin → user (kalau tabel ada)
             'driver' => 'spmb',
-            'model' => App\Models\ParentAccount::class,
+            'model' => App\Models\DataPeserta::class,
         ],
     ],
 

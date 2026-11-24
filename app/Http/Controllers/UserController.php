@@ -471,9 +471,14 @@ public function cetakInfoEnroll($nama, $no_pendaftaran, $jalur)
         ->with('parentAccount')
         ->firstOrFail();
 
-    $user = $peserta->parentAccount
-        ?? \App\Models\ParentAccount::find($peserta->id_user)
-        ?? \App\Models\User::where('username', $peserta->no_pendaftaran)->first();
+    // Kredensial login SPMB ada di data_peserta; parents hanya setelah lulus.
+    $user = (object) [
+        'no_wa' => $peserta->no_hp,
+        'username' => $peserta->no_hp,
+        'plain_password' => $peserta->getAttributes()['plain_password']
+            ?? $peserta->parentAccount?->plain_password
+            ?? null,
+    ];
 
     $createdAt = \Carbon\Carbon::parse($peserta->created_at)->translatedFormat('d M, Y');
     $cetak = \Carbon\Carbon::now()->translatedFormat('d M, Y');

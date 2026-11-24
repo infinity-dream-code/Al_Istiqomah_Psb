@@ -44,7 +44,7 @@
                     <div class="hidden md:block w-32 text-right pr-6 flex-shrink-0">
                         <div class="text-blue-400 font-medium text-lg mb-1">INFO</div>
                         <div class="text-gray-500 text-sm">
-                            {{ optional(Auth::user()->peserta)->created_at?->translatedFormat('j F Y') ?? '-' }}
+                            {{ optional(Auth::user() instanceof \App\Models\DataPeserta ? Auth::user() : Auth::user()->peserta)->created_at?->translatedFormat('j F Y') ?? '-' }}
                         </div>
                     </div>
                     <div class="absolute left-6 md:relative md:left-0 z-10 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg border-4 border-white flex-shrink-0">
@@ -54,7 +54,7 @@
                         <div class="block md:hidden mb-4">
                             <div class="text-blue-400 font-medium text-lg mb-1 ml-4">INFO</div>
                             <div class="text-gray-500 text-sm ml-4">
-                                {{ optional(Auth::user()->peserta)->created_at?->translatedFormat('j F Y') ?? '-' }}
+                                {{ optional(Auth::user() instanceof \App\Models\DataPeserta ? Auth::user() : Auth::user()->peserta)->created_at?->translatedFormat('j F Y') ?? '-' }}
                             </div>
                         </div>
                         <div class="bg-blue-500 text-white px-5 py-3 rounded-t-lg">

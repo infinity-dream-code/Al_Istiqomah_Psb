@@ -28,7 +28,10 @@ class PesertaController extends Controller
 
 public function index()
 {
-    $peserta = auth()->user()->peserta()->with(['relasiGelombang', 'ujian', 'masterHarga'])->first();
+    $user = auth()->user();
+    $peserta = $user instanceof DataPeserta
+        ? $user->load(['relasiGelombang', 'ujian', 'masterHarga'])
+        : $user->peserta()->with(['relasiGelombang', 'ujian', 'masterHarga'])->first();
 
     $step1Done = $peserta && (int) $peserta->status_paid === 1;
     $step2Done = $peserta && $this->isKelengkapanLengkap($peserta);
@@ -63,7 +66,8 @@ private function isKelengkapanLengkap(DataPeserta $peserta): bool
 
 public function suratKelulusan()
 {
-    $peserta = auth()->user()->peserta;
+    $user = auth()->user();
+    $peserta = $user instanceof DataPeserta ? $user : $user->peserta;
     if (!$peserta || !in_array(strtolower((string) $peserta->status_ujian), ['lulus', 'gagal'], true)) {
         abort(403, 'Surat kelulusan belum tersedia.');
     }
@@ -78,7 +82,8 @@ public function suratKelulusan()
 
 public function suratRegistrasi()
 {
-    $peserta = auth()->user()->peserta;
+    $user = auth()->user();
+    $peserta = $user instanceof DataPeserta ? $user : $user->peserta;
     if (!$peserta || strtolower((string) $peserta->status_ujian) !== 'lulus') {
         abort(403, 'Surat registrasi hanya untuk peserta yang lulus.');
     }
@@ -100,7 +105,8 @@ public function suratRegistrasi()
 
 public function lengkapi_data()
 {
-    $peserta = auth()->user()->peserta ?? new DataPeserta();
+    $user = auth()->user();
+    $peserta = ($user instanceof DataPeserta ? $user : ($user->peserta ?? null)) ?? new DataPeserta();
     $peserta->load(['bantuan','masterHarga']);
 
     // Saat validasi gagal, isi ulang form dari old input supaya ketikan user tidak hilang.
@@ -192,7 +198,7 @@ public function simpan_bantuan(Request $request)
     ]);
 
     $user = auth()->user();
-    $peserta = $user->peserta;
+    $peserta = $user instanceof DataPeserta ? $user : $user->peserta;
 
     if (!$peserta) {
         return redirect()->back()->with('error', 'Data peserta tidak ditemukan.');
@@ -236,8 +242,11 @@ public function simpan_data(Request $request)
     ]);
 
     $user = auth()->user();
-    $peserta = $user->peserta ?? new DataPeserta();
-    $peserta->id_user = $user->id;
+    $peserta = ($user instanceof DataPeserta ? $user : ($user->peserta ?? null)) ?? new DataPeserta();
+    // id_user = parents.id (diisi saat lulus). Jangan timpa dengan id peserta.
+    if (!$user instanceof DataPeserta) {
+        $peserta->id_user = $user->id;
+    }
 
     $fillable = [
         'nama_peserta', 'nik', 'tempat_lahir', 'tanggal_lahir',

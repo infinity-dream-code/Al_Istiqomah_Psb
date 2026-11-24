@@ -32,8 +32,8 @@
 
             <div>
                 <p class="text-gray-600 font-semibold">Akun Login Anda</p>
-                <p class="text-lg font-bold">Username (No. WA) : {{ $peserta->parentAccount?->no_wa ?? $peserta->no_hp ?? $peserta->user?->username }}</p>
-                <p class="text-lg font-bold">Password : {{ $passwordPlain ?? $peserta->parentAccount?->plain_password ?? $peserta->user?->plain_password }}</p>
+                <p class="text-lg font-bold">Username (No. WA) : {{ $peserta->no_hp ?? $peserta->parentAccount?->no_wa ?? $peserta->user?->username }}</p>
+                <p class="text-lg font-bold">Password : {{ $passwordPlain ?? data_get($peserta->getAttributes(), 'plain_password') ?? $peserta->parentAccount?->plain_password ?? $peserta->user?->plain_password }}</p>
             </div>
 
             <div class="border-t pt-4">

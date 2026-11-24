@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\DataPeserta;
 use App\Models\ParentAccount;
 use App\Models\User;
 use App\Support\AppIdentity;
@@ -372,6 +373,11 @@ class RestoreAuthFromCookie
     private static function resolveAccount(int $id, string $role = ''): ?Authenticatable
     {
         if ($role === 'peserta') {
+            $peserta = DataPeserta::find($id);
+            if ($peserta) {
+                return $peserta;
+            }
+
             return ParentAccount::find($id);
         }
 
@@ -384,6 +390,11 @@ class RestoreAuthFromCookie
             } catch (\Throwable $e) {
                 // ignore
             }
+        }
+
+        $peserta = DataPeserta::find($id);
+        if ($peserta) {
+            return $peserta;
         }
 
         $parent = ParentAccount::find($id);

@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class DataPeserta extends Model
+class DataPeserta extends Authenticatable
 {
     use HasFactory;
 
@@ -35,6 +35,9 @@ class DataPeserta extends Model
         'kewarganegaraan',
         'email',
         'no_hp',
+        'password',
+        'plain_password',
+        'kontak_utama',
         'alamat_lengkap',
         'alamat_sekolah',
         'dusun',
@@ -98,58 +101,94 @@ class DataPeserta extends Model
         'pembekalan',
     ];
 
+    protected $hidden = [
+        'password',
+        'plain_password',
+    ];
+
+    protected $appends = ['username', 'nama', 'role'];
+
     protected $casts = [
-        'tanggal_lahir'        => 'date',
-        'ibu_tanggal_lahir'    => 'date',
-        'ayah_tanggal_lahir'   => 'date',
-        'created_at'           => 'datetime',
-        'updated_at'           => 'datetime',
-        'jml_saudara_kandung'  => 'integer',
-        'jml_saudara_yayasan'  => 'integer',
+        'tanggal_lahir' => 'date',
+        'ibu_tanggal_lahir' => 'date',
+        'ayah_tanggal_lahir' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'jml_saudara_kandung' => 'integer',
+        'jml_saudara_yayasan' => 'integer',
         'tgl_bayar_regis' => 'date',
         'tgl_bayar_daftar' => 'date',
         'batas_awal_registrasi' => 'datetime',
         'batas_akhir_registrasi' => 'datetime',
-        'pembekalan'            => 'datetime',
+        'pembekalan' => 'datetime',
     ];
 
-  public static function generateNoPendaftaran($idGelombang)
-{
-    $gel = MasterGelombang::find($idGelombang);
-    $tahun = substr($gel->tahun, -2);
-    $gelombang = $gel->gelombang;
-    $gelombangCode = $gelombang - 1;
-    $prefix = '9' . $tahun . $gelombangCode;
+    public function getAuthPassword()
+    {
+        return $this->attributes['password'] ?? '';
+    }
 
-    $last = static::where('no_pendaftaran', 'like', $prefix . '%')
-        ->orderBy('no_pendaftaran', 'desc')
-        ->value('no_pendaftaran');
+    public function getUsernameAttribute(): ?string
+    {
+        return $this->attributes['no_hp'] ?? null;
+    }
 
-    $increment = $last ? intval(substr($last, strlen($prefix))) + 1 : 1;
-    $incrementStr = str_pad($increment, 6, '0', STR_PAD_LEFT);
+    public function getNamaAttribute(): ?string
+    {
+        return $this->attributes['nama_peserta'] ?? null;
+    }
 
-    return $prefix . $incrementStr;
-}
+    public function getRoleAttribute(): string
+    {
+        return 'peserta';
+    }
 
-public function relasiJalur()
-{
-    return $this->belongsTo(MasterJalur::class, 'id_jalur');
-}
+    /**
+     * Kompat view/controller lama: auth()->user()->peserta
+     * (user login sudah DataPeserta sendiri).
+     */
+    public function peserta()
+    {
+        return $this->hasOne(self::class, 'id', 'id');
+    }
 
-public function relasiProdi()
-{
-    return $this->belongsTo(MasterProdi::class, 'id_prodi');
-}
+    public static function generateNoPendaftaran($idGelombang)
+    {
+        $gel = MasterGelombang::find($idGelombang);
+        $tahun = substr($gel->tahun, -2);
+        $gelombang = $gel->gelombang;
+        $gelombangCode = $gelombang - 1;
+        $prefix = '9' . $tahun . $gelombangCode;
 
-public function relasiFakultas()
-{
-    return $this->belongsTo(MasterFakultas::class, 'id_fakultas');
-}
+        $last = static::where('no_pendaftaran', 'like', $prefix . '%')
+            ->orderBy('no_pendaftaran', 'desc')
+            ->value('no_pendaftaran');
 
-public function tagihan()
-{
-    return $this->hasMany(Tagihan::class, 'id_peserta');
-}
+        $increment = $last ? intval(substr($last, strlen($prefix))) + 1 : 1;
+        $incrementStr = str_pad($increment, 6, '0', STR_PAD_LEFT);
+
+        return $prefix . $incrementStr;
+    }
+
+    public function relasiJalur()
+    {
+        return $this->belongsTo(MasterJalur::class, 'id_jalur');
+    }
+
+    public function relasiProdi()
+    {
+        return $this->belongsTo(MasterProdi::class, 'id_prodi');
+    }
+
+    public function relasiFakultas()
+    {
+        return $this->belongsTo(MasterFakultas::class, 'id_fakultas');
+    }
+
+    public function tagihan()
+    {
+        return $this->hasMany(Tagihan::class, 'id_peserta');
+    }
 
     public function ujian()
     {
@@ -163,7 +202,6 @@ public function tagihan()
 
     public function user()
     {
-        // Kompat: id_user sekarang menyimpan parents.id untuk peserta SPMB.
         return $this->belongsTo(ParentAccount::class, 'id_user');
     }
 
@@ -178,9 +216,9 @@ public function tagihan()
     }
 
     public function relasiGelombang()
-{
-    return $this->belongsTo(MasterGelombang::class, 'id_gelombang');
-}
+    {
+        return $this->belongsTo(MasterGelombang::class, 'id_gelombang');
+    }
 
     public function gelombang()
     {
@@ -196,7 +234,6 @@ public function tagihan()
     {
         return $this->belongsTo(MasterProdi::class, 'id_prodi');
     }
-
 
     public function sekolah()
     {

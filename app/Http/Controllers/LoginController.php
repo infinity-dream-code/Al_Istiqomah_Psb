@@ -133,7 +133,9 @@ class LoginController extends Controller
         }
 
         if ($role === 'peserta') {
-            $peserta = DataPeserta::where('id_user', $user->getAuthIdentifier())->first();
+            $peserta = $user instanceof DataPeserta
+                ? $user
+                : DataPeserta::where('id_user', $user->getAuthIdentifier())->first();
 
             if ($peserta) {
                 $this->syncStatusBayar($peserta);
@@ -254,6 +256,20 @@ class LoginController extends Controller
     {
         $wa = preg_replace('/\D+/', '', $username) ?: $username;
 
+        $peserta = DataPeserta::where('no_hp', $wa)->orderByDesc('id')->first()
+            ?? DataPeserta::where('no_hp', $username)->orderByDesc('id')->first();
+        if ($peserta) {
+            $plain = (string) ($peserta->getAttributes()['plain_password'] ?? '');
+            if ($plain !== '' && hash_equals($plain, $password)) {
+                return $peserta;
+            }
+            $hash = (string) ($peserta->getAttributes()['password'] ?? '');
+            if ($hash !== '' && Hash::check($password, $hash)) {
+                return $peserta;
+            }
+        }
+
+        // Kompat akun lama yang login via parents
         $parent = ParentAccount::where('no_wa', $wa)->where('status', 'active')->first()
             ?? ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
         if ($parent) {

@@ -136,8 +136,8 @@
                         </button>
                         <div>
                             <p class="font-bold">
-                                {{ Auth::user()->peserta->nama_peserta }}
-                                <span class="text-gray-500 text-sm">({{ Auth::user()->peserta->no_pendaftaran }})</span>
+                                {{ (Auth::user() instanceof \App\Models\DataPeserta ? Auth::user() : Auth::user()->peserta)->nama_peserta }}
+                                <span class="text-gray-500 text-sm">({{ (Auth::user() instanceof \App\Models\DataPeserta ? Auth::user() : Auth::user()->peserta)->no_pendaftaran }})</span>
                             </p>
                         </div>
                     </div>
