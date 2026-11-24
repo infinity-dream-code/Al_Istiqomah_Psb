@@ -113,6 +113,76 @@
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 8px;
         }
+
+        .wa-utama-box {
+            background: linear-gradient(180deg, #f0f7f2 0%, #ffffff 100%);
+            border: 1.5px solid #c5dccb;
+            border-radius: 12px;
+            padding: 18px 20px;
+        }
+
+        .wa-choice {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 10px;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+        }
+
+        .wa-choice:hover {
+            border-color: #2d5a3d;
+            background: #f7fbf8;
+        }
+
+        .wa-choice:has(input:checked) {
+            border-color: #2d5a3d;
+            background: #eef6f0;
+            box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.12);
+        }
+
+        .wa-choice input {
+            width: 18px;
+            height: 18px;
+            accent-color: #2d5a3d;
+            flex-shrink: 0;
+        }
+
+        .wa-choice-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.2;
+        }
+
+        .wa-choice-sub {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wa-choice-badge {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            color: #2d5a3d;
+            background: #d8ebe0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity .15s ease;
+            white-space: nowrap;
+        }
+
+        .wa-choice:has(input:checked) .wa-choice-badge {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -290,11 +360,7 @@
                                     </div>
                                     <div>
                                         <label class="block label-text mb-2">No. Telp/WA Ibu <span class="required">*</span></label>
-                                        <input type="text" name="tlp_ibu" required placeholder="08xxxxxxxxxx" class="form-input">
-                                        <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                            <input type="radio" name="kontak_utama" value="ibu" class="text-green-600 focus:ring-green-500" required>
-                                            <span>Jadikan nomor utama (login &amp; WA)</span>
-                                        </label>
+                                        <input type="text" name="tlp_ibu" id="tlp_ibu" required placeholder="08xxxxxxxxxx" class="form-input">
                                     </div>
                                 </div>
                             </div>
@@ -326,12 +392,33 @@
                                     </div>
                                     <div>
                                         <label class="block label-text mb-2">No. Telp/WA Ayah <span class="required">*</span></label>
-                                        <input type="text" name="tlp_ayah" required placeholder="08xxxxxxxxxx" class="form-input">
-                                        <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                            <input type="radio" name="kontak_utama" value="ayah" class="text-green-600 focus:ring-green-500" checked>
-                                            <span>Jadikan nomor utama (login &amp; WA)</span>
-                                        </label>
+                                        <input type="text" name="tlp_ayah" id="tlp_ayah" required placeholder="08xxxxxxxxxx" class="form-input">
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="wa-utama-box mb-6" id="waUtamaBox">
+                                <div class="mb-3">
+                                    <p class="section-title">Nomor utama untuk login &amp; WhatsApp <span class="required">*</span></p>
+                                    <p class="text-sm text-gray-500 mt-1">Pilih salah satu nomor orang tua. Nomor ini dipakai sebagai username login.</p>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <label class="wa-choice">
+                                        <input type="radio" name="kontak_utama" value="ibu" required>
+                                        <span>
+                                            <span class="wa-choice-title">Nomor Ibu</span>
+                                            <span class="wa-choice-sub" id="previewWaIbu">Belum diisi</span>
+                                        </span>
+                                        <span class="wa-choice-badge">Dipilih</span>
+                                    </label>
+                                    <label class="wa-choice">
+                                        <input type="radio" name="kontak_utama" value="ayah" checked>
+                                        <span>
+                                            <span class="wa-choice-title">Nomor Ayah</span>
+                                            <span class="wa-choice-sub" id="previewWaAyah">Belum diisi</span>
+                                        </span>
+                                        <span class="wa-choice-badge">Dipilih</span>
+                                    </label>
                                 </div>
                             </div>
 
@@ -623,11 +710,23 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     const phoneInputs = document.querySelectorAll('input[name="tlp_ibu"], input[name="tlp_ayah"]');
+    const previewWaIbu = document.getElementById('previewWaIbu');
+    const previewWaAyah = document.getElementById('previewWaAyah');
+
+    function syncWaPreview() {
+        const ibu = (document.getElementById('tlp_ibu')?.value || '').trim();
+        const ayah = (document.getElementById('tlp_ayah')?.value || '').trim();
+        if (previewWaIbu) previewWaIbu.textContent = ibu || 'Belum diisi';
+        if (previewWaAyah) previewWaAyah.textContent = ayah || 'Belum diisi';
+    }
+
     phoneInputs.forEach(input => {
-        input.addEventListener('input', function(event) {
+        input.addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
+            syncWaPreview();
         });
     });
+    syncWaPreview();
 
     const tahunLulusInput = document.querySelector('input[name="tahun_lulus"]');
     if (tahunLulusInput) {

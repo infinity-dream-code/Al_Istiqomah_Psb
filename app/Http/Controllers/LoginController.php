@@ -257,7 +257,8 @@ class LoginController extends Controller
         $parent = ParentAccount::where('no_wa', $wa)->where('status', 'active')->first()
             ?? ParentAccount::where('no_wa', $username)->where('status', 'active')->first();
         if ($parent) {
-            if (!empty($parent->plain_password) && hash_equals((string) $parent->plain_password, $password)) {
+            $plain = (string) ($parent->getAttributes()['plain_password'] ?? '');
+            if ($plain !== '' && hash_equals($plain, $password)) {
                 return $parent;
             }
             if (Hash::check($password, (string) $parent->password)) {

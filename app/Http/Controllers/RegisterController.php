@@ -769,7 +769,12 @@ public function index()
     $gelombangs   = collect();
     $fakultas     = collect();
     $prodis       = collect();
-    $jurusans     = MasterJurusanSekolah::orderBy('nama')->get();
+    // Tabel master_jurusan_sekolah tidak ada di DB SIKEU 56; form enroll tidak memakai field ini.
+    try {
+        $jurusans = MasterJurusanSekolah::orderBy('nama')->get();
+    } catch (\Throwable $e) {
+        $jurusans = collect();
+    }
     $pekerjaans   = MasterPekerjaanOrtu::orderBy('id')->get();
     $penghasilans = MasterPenghasilanOrtu::orderBy('id')->get();
 
